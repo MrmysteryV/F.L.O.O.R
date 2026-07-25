@@ -1,0 +1,4396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>F.L.O.O.R by MrMysteryV</title>
+<link rel="icon" type="image/png" href="Icon.png?">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;overflow:hidden}
+body{
+  display:flex;flex-direction:row-reverse;
+  font-family:'Segoe UI',system-ui,-apple-system,sans-serif;
+  background:#1a1a1a;color:#e0d5c0;user-select:none
+}
+/* ── Sidebar (right) ── */
+#sidebar{
+  width:300px;min-width:300px;
+  background:#1e1e1e;
+  border-left:2px solid #f5a623;
+  display:flex;flex-direction:column;
+  overflow:hidden;
+  z-index:10;
+  box-shadow:-4px 0 12px rgba(0,0,0,.5);
+  transition:width .28s cubic-bezier(.4,0,.2,1),min-width .28s cubic-bezier(.4,0,.2,1),border-color .2s,box-shadow .2s
+}
+#sidebar>*{width:300px;min-width:300px;flex-shrink:0}
+#sidebar.collapsed{
+  width:0;min-width:0;
+  border-left-color:transparent;
+  box-shadow:none
+}
+#sidebar-toggle{
+  position:fixed;top:50%;right:288px;
+  transform:translateY(-50%);
+  width:26px;height:72px;
+  border:1px solid #6b4b18;border-right:0;
+  border-radius:7px 0 0 7px;
+  background:#27221b;color:#f5a623;
+  box-shadow:-3px 0 10px rgba(0,0,0,.35);
+  font-size:18px;font-weight:700;line-height:1;
+  cursor:pointer;z-index:30;
+  transition:right .28s cubic-bezier(.4,0,.2,1),background .15s,border-color .15s
+}
+#sidebar-toggle:hover{background:#3a3023;border-color:#f5a623}
+#sidebar-toggle:focus-visible{outline:2px solid #f5a623;outline-offset:2px}
+body.sidebar-collapsed #sidebar-toggle{right:0}
+#sidebar-header{
+  background:#151515;
+  padding:14px 16px;
+  border-bottom:1px solid #333;
+  text-align:center
+}
+#sidebar-header h2{
+  font-size:15px;font-weight:700;
+  letter-spacing:2px;text-transform:uppercase;
+  color:#f5a623
+}
+#sidebar-header h2 small{
+  display:block;font-size:9px;font-weight:400;
+  color:#887;letter-spacing:1px;
+  margin-top:2px
+}
+#floor-bar{
+  display:flex;align-items:center;gap:6px;
+  padding:8px 12px;
+  background:#222;border-bottom:1px solid #333;
+  font-size:12px
+}
+#floor-bar label{color:#998;font-size:11px;white-space:nowrap}
+#floor-select{flex:1;background:#2a2a2a;color:#e0d5c0;border:1px solid #444;padding:4px 6px;font-size:11px;border-radius:3px}
+.add-floor-btn{background:#3a3a3a;color:#f5a623;border:1px solid #555;padding:2px 7px;font-size:12px;font-weight:700;cursor:pointer;border-radius:3px;line-height:1.4;white-space:nowrap}
+.add-floor-btn:hover{background:#4a4a4a}
+
+/* ── Menu ── */
+#menu{flex:1;overflow-y:auto;padding:8px 10px}
+#menu::-webkit-scrollbar{width:6px}
+#menu::-webkit-scrollbar-track{background:#1a1a1a}
+#menu::-webkit-scrollbar-thumb{background:#444;border-radius:3px}
+.cat-label{
+  font-size:10px;font-weight:700;letter-spacing:1.5px;
+  color:#f5a623;text-transform:uppercase;
+  margin:10px 0 4px 0;padding:0 4px
+}
+.subcat-label{
+  margin:5px 0 3px;padding:4px 7px;
+  background:#343434;border-left:2px solid #666;
+  color:#ddd4c4;font-size:10px;font-weight:700;letter-spacing:.45px
+}
+.btn{
+  display:flex;align-items:center;gap:8px;
+  width:100%;background:#2a2a2a;color:#ccc;
+  border:1px solid #3a3a3a;
+  padding:7px 10px;margin-bottom:3px;
+  cursor:pointer;text-align:left;border-radius:3px;
+  transition:.1s;font-size:12px
+}
+.btn:hover{background:#353535;border-color:#555}
+.btn.active{background:#f5a623;color:#111;font-weight:700;border-color:#f5a623}
+.btn .color-dot{
+  width:10px;height:10px;border-radius:2px;
+  flex-shrink:0;display:inline-block
+}
+.btn .key-hint{
+  margin-left:auto;font-size:9px;color:#665;
+  font-family:monospace
+}
+.btn.active .key-hint{color:#653}
+.tool-row{display:grid;grid-template-columns:minmax(0,1fr) 70px;gap:5px;margin-bottom:3px}
+.lift-tool-row{grid-template-columns:minmax(0,1fr) 64px 62px}
+.tool-row .btn{margin-bottom:0}
+.lift-direction-btn{background:#2a2a2a;color:#e0d5c0;border:1px solid #3a3a3a;border-radius:3px;padding:4px 5px;font-size:10px;font-weight:700;cursor:pointer}
+.lift-direction-btn:hover,.lift-direction-btn:focus{border-color:#f5a623;outline:none}
+.tool-tier-select{background:#2a2a2a;color:#e0d5c0;border:1px solid #3a3a3a;border-radius:3px;padding:4px 5px;font-size:11px;cursor:pointer}
+.tool-tier-select:hover,.tool-tier-select:focus{border-color:#f5a623;outline:none}
+.tool-tier-select:disabled{opacity:.55;cursor:default}
+
+/* ── Canvas ── */
+#canvas-container{
+  flex:1;position:relative;overflow:hidden;
+  background:#1e1e1e;
+  cursor:default
+}
+canvas{
+  display:block;width:100%;height:100%;
+  background:#1e1e1e;
+  contain:paint
+}
+
+/* ── Overlays ── */
+#overlay{
+  position:absolute;top:0;left:0;right:0;bottom:0;
+  pointer-events:none;z-index:5
+}
+#overlay>*{pointer-events:auto}
+#instructions{
+  position:absolute;bottom:16px;left:16px;
+  background:rgba(0,0,0,.8);
+  padding:10px 14px;border-radius:4px;
+  font-size:12px;color:#998;line-height:1.6;
+  border-left:3px solid #f5a623
+}
+#instructions span{color:#f5a623;font-weight:700}
+.tool-label{
+  position:absolute;top:16px;left:16px;
+  background:rgba(0,0,0,.75);
+  padding:6px 12px;border-radius:4px;
+  font-size:13px;font-weight:700;color:#f5a623;
+  border:1px solid #333
+}
+#status-bar{
+  position:absolute;bottom:16px;right:16px;
+  background:rgba(0,0,0,.75);
+  padding:6px 12px;border-radius:4px;
+  font-size:11px;color:#887;
+  display:flex;gap:16px
+}
+#status-bar em{color:#f5a623;font-style:normal}
+
+/* ── Dialogs ── */
+.modal-overlay{
+  display:none;
+  position:absolute;top:0;left:0;right:0;bottom:0;
+  background:rgba(0,0,0,.7);z-index:20;
+  justify-content:center;align-items:center
+}
+.modal-overlay.open{display:flex}
+.modal{
+  background:#222;border:1px solid #444;border-radius:6px;
+  padding:20px;width:400px;max-width:90vw;
+  box-shadow:0 8px 32px rgba(0,0,0,.6);
+  max-height:80vh;display:flex;flex-direction:column
+}
+.modal h3{color:#f5a623;font-size:14px;margin-bottom:10px;flex-shrink:0}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end;flex-shrink:0;margin-top:10px}
+.modal-actions button{
+  padding:6px 16px;border-radius:3px;font-size:12px;
+  cursor:pointer;border:1px solid #555;background:#333;color:#ccc
+}
+.modal-actions button:hover{background:#444}
+.modal-actions button.primary{background:#f5a623;color:#111;font-weight:700;border-color:#f5a623}
+.modal-actions button.primary:hover{background:#e09610}
+
+/* ── Batch import rows ── */
+#import-rows{flex:1;overflow-y:auto;margin-bottom:8px}
+#import-rows::-webkit-scrollbar{width:5px}
+#import-rows::-webkit-scrollbar-thumb{background:#444;border-radius:3px}
+.batch-row{
+  display:flex;gap:6px;align-items:center;
+  margin-bottom:4px;background:#1a1a1a;
+  padding:4px 6px;border-radius:3px
+}
+.batch-row select{
+  flex:1;background:#2a2a2a;color:#e0d5c0;
+  border:1px solid #444;padding:4px 6px;
+  font-size:11px;border-radius:3px
+}
+.batch-row select:focus{outline:none;border-color:#f5a623}
+.batch-row input[type=number]{
+  width:55px;background:#2a2a2a;color:#e0d5c0;
+  border:1px solid #444;padding:4px 6px;
+  font-size:11px;border-radius:3px;text-align:center
+}
+.batch-row input:focus{outline:none;border-color:#f5a623}
+.batch-row .rm-row{
+  background:transparent;color:#e74c3c;border:none;
+  cursor:pointer;font-size:15px;padding:2px 5px;line-height:1
+}
+#add-row-btn{
+  width:100%;padding:5px;margin-top:2px;
+  background:#2a2a2a;color:#f5a623;
+  border:1px dashed #555;border-radius:3px;
+  font-size:11px;cursor:pointer
+}
+#add-row-btn:hover{background:#353535;border-color:#f5a623}
+
+/* ── Sidebar action buttons ── */
+.sidebar-actions{display:flex;gap:4px;padding:6px 10px}
+.sidebar-actions button{
+  flex:1;padding:5px 4px;font-size:10px;
+  background:#2a2a2a;color:#e0d5c0;
+  border:1px solid #3a3a3a;border-radius:3px;
+  cursor:pointer;text-align:center;letter-spacing:0.5px
+}
+.sidebar-actions button:hover{background:#353535;border-color:#555}
+
+
+/* ── Settings and left cost panel ── */
+#settings-btn{
+  position:absolute;top:16px;right:16px;
+  width:34px;height:34px;border-radius:50%;
+  background:rgba(0,0,0,.78);color:#f5a623;
+  border:1px solid #444;font-size:18px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center
+}
+#settings-btn:hover{background:#2a2a2a;border-color:#f5a623}
+.setting-row{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:8px 0;color:#ccc;font-size:12px}
+.setting-row select{background:#2a2a2a;color:#e0d5c0;border:1px solid #444;padding:5px 8px;border-radius:3px}
+.setting-help{font-size:11px;color:#998;line-height:1.45;margin-top:6px}
+#cost-panel{
+  position:absolute;top:62px;left:16px;width:360px;max-height:calc(100% - 140px);
+  background:rgba(20,20,20,.94);border:1px solid #3c3c3c;border-left:3px solid #f5a623;
+  box-shadow:0 8px 24px rgba(0,0,0,.45);border-radius:5px;overflow:hidden;
+  font-size:11px;color:#cfc4b1
+}
+#cost-panel.collapsed{width:34px;height:150px;max-height:150px}
+#cost-panel.collapsed #cost-content{display:none}
+#cost-toggle{
+  width:100%;background:#151515;color:#f5a623;border:0;border-bottom:1px solid #333;
+  padding:7px 9px;cursor:pointer;text-align:left;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase
+}
+#cost-panel.collapsed #cost-toggle{
+  height:150px;writing-mode:vertical-rl;text-orientation:mixed;text-align:center;padding:8px 0;border-bottom:0
+}
+#cost-content{padding:9px 10px;overflow-y:auto;max-height:calc(100vh - 215px);scrollbar-width:thin;scrollbar-color:#444 #1a1a1a}
+#cost-content::-webkit-scrollbar{width:6px}
+#cost-content::-webkit-scrollbar-track{background:#1a1a1a}
+#cost-content::-webkit-scrollbar-thumb{background:#444;border-radius:3px}
+#cost-content h4{color:#f5a623;margin:8px 0 4px;font-size:11px;text-transform:uppercase;letter-spacing:1px}
+.cost-top-controls{display:flex;align-items:center;padding:2px 0 8px;border-bottom:1px solid rgba(255,255,255,.08);margin-bottom:8px}
+.cost-check-row{display:grid;grid-template-columns:18px minmax(0,1fr) auto;gap:7px;align-items:center;min-height:28px;padding:4px 3px;border-bottom:1px solid rgba(255,255,255,.07)}
+.cost-check-row:hover{background:rgba(255,255,255,.035)}
+.cost-check-row input{accent-color:#f5a623}
+.cost-check-row .name{min-width:0;color:#ddd;word-break:break-word}
+.cost-check-row .qty{color:#fff;font-weight:700;white-space:nowrap;text-align:right}
+.cost-check-row input:checked ~ .name,.cost-check-row input:checked ~ .qty{text-decoration:line-through;opacity:.52}
+.cost-summary{display:grid;grid-template-columns:1fr auto;gap:3px 8px;margin-bottom:7px}
+.cost-summary strong{color:#fff;font-weight:700}
+.cost-list .muted{color:#887}
+#cost-content details{margin:8px 0;background:rgba(255,255,255,.035);border-radius:3px;padding:6px}
+#cost-content summary{cursor:pointer;color:#f5a623;font-weight:700;outline:none}
+.breakdown-meta{display:block;color:#887;font-size:10px;margin-top:1px}
+
+</style>
+</head>
+<body>
+
+<div id="sidebar">
+  <div id="sidebar-header">
+    <h2>F.L.O.O.R<small>FICSIT Logistics & Optimal Organizational Router <br> By MrMysteryV    <a href="https://github.com/MrmysteryV">Github</a></small></h2>
+  </div>
+  <div id="floor-bar">
+    <label>Floor:</label>
+    <select id="floor-select"></select>
+    <button id="add-floor-below-btn" class="add-floor-btn" title="Go down one floor; add a new lower floor at the bottom">↓</button>
+    <button id="add-floor-above-btn" class="add-floor-btn" title="Go up one floor; add a new upper floor at the top">↑</button>
+  </div>
+  <div id="menu"></div>
+  <div class="sidebar-actions">
+    <button onclick="openImport()">📦 Batch place buildings</button>
+    <button onclick="exportPlan()">💾 Save</button>
+    <button onclick="document.getElementById('load-input').click()">📂 Load</button>
+    <input type="file" id="load-input" accept=".sfactory,application/json" style="display:none" onchange="importPlan(event)">
+  </div>
+</div>
+<button id="sidebar-toggle" type="button" onclick="toggleSidebar()" title="Close building menu" aria-label="Close building menu" aria-expanded="true">❯</button>
+
+<div id="canvas-container">
+  <canvas id="editor"></canvas>
+  <div id="overlay">
+    <div id="tool-label" class="tool-label">Selection Tool</div>
+    <button id="settings-btn" title="Settings" onclick="openSettings()">⚙</button>
+    <div id="cost-panel" class="collapsed">
+      <button id="cost-toggle" onclick="toggleCostPanel()">Building Costs</button>
+      <div id="cost-content"></div>
+    </div>
+    <div id="instructions">
+      <span>RMB+Drag:</span> Pan &nbsp; <span>Scroll:</span> Zoom &nbsp;
+      <span>R:</span> Rotate &nbsp; <span>Esc:</span> Cancel &nbsp; <span>L:</span> Label &nbsp;
+      <span>Shift+Drag:</span> Select &nbsp; <span>Ctrl+Click:</span> Add/remove building &nbsp; <span>Ctrl+C/V:</span> Copy / place group &nbsp; <span>Del:</span> Delete
+    </div>
+    <div id="status-bar">
+      <span>Zoom: <em id="zoom-display">1.0x</em></span>
+      <span>Floor: <em id="floor-display">0</em></span>
+    </div>
+  </div>
+
+  <div id="import-modal" class="modal-overlay" onclick="if(event.target===this)closeImport()">
+    <div class="modal">
+      <h3>Batch Place Buildings</h3>
+      <div id="import-rows"></div>
+      <button id="add-row-btn" onclick="addImportRow()">+ Add Building</button>
+      <div class="modal-actions">
+        <button onclick="closeImport()">Cancel</button>
+        <button class="primary" onclick="startBatchPlacement()">Start Placing</button>
+      </div>
+    </div>
+  </div>
+
+
+  <div id="settings-modal" class="modal-overlay" onclick="if(event.target===this)closeSettings()">
+    <div class="modal">
+      <h3>Planner Settings</h3>
+      <div class="setting-row">
+        <label for="default-front-select">Default machine front</label>
+        <select id="default-front-select" onchange="setDefaultFront(this.value)">
+          <option value="down">Arrow faces down</option>
+          <option value="up">Arrow faces up</option>
+        </select>
+      </div>
+      <div class="setting-help">
+	    This controls the starting rotation for newly selected machine tools.
+	    Press R to rotate as usual.
+	  </div>
+
+	  <div class="setting-row">
+	    <div>
+		  <strong style="display:block;color:#e0d5c0">Clear whole grid</strong>
+		  <span class="setting-help">
+		    Removes every building, connector, lift, label, and additional floor.
+		  </span>
+	    </div>
+
+	    <button
+		  type="button"
+		  onclick="clearWholeGrid()"
+		  style="
+		    flex-shrink:0;
+		    padding:6px 10px;
+		    border-radius:3px;
+		    border:1px solid #a33;
+		    background:#512626;
+		    color:#ffd6d6;
+		    cursor:pointer;
+		  "
+	    >
+		  Clear grid
+	    </button>
+	  </div>
+
+	  <div class="modal-actions">
+	    <button class="primary" onclick="closeSettings()">Done</button>
+	  </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════
+// CONSTANTS
+// ═══════════════════════════════════════════════════════════════
+const SCALE = 8;              // 1 meter = 8 pixels
+const METER = SCALE;
+const FLOOR_HEIGHT = 8;       // Default floor-to-floor height (meters)
+const MIN_ZOOM = 0.01;
+const MAX_ZOOM = 5;
+const LABEL_HEIGHT_METERS = 4;
+const LABEL_HEIGHT_WORLD = LABEL_HEIGHT_METERS * SCALE;
+
+const LABEL_FONT_WORLD = 1.75 * SCALE;
+const LABEL_PADDING_X_WORLD = 1.375 * SCALE;
+const LABEL_MIN_WIDTH_WORLD = 8.75 * SCALE;
+const LABEL_MAX_WIDTH_WORLD = 45 * SCALE;
+
+// ═══════════════════════════════════════════════════════════════
+// BUILDING DATABASE
+// ═══════════════════════════════════════════════════════════════
+// Build-menu sections and subcategories mirror the reference image. Only
+// tools/buildings that exist in this planner are rendered inside each group.
+const MENU_STRUCTURE = [
+  { key:'logistics', label:'Logistics', groups:[
+    { key:'logistics-pipelines', label:'Pipeline Logistics'},
+    { key:'logistics-sorting', label:'Conveyor Sorting' }
+  ]},
+  { key:'production', label:'Production', groups:[
+    { key:'extractors', label:'Extractors' },
+    { key:'smelters', label:'Smelters' },
+    { key:'manufacturers', label:'Manufacturers' }
+  ]},
+  { key:'power', label:'Power', groups:[
+    { key:'power-gen', label:'Power Generation' },
+    { key:'power-grid', label:'Power Grid' }
+  ]},
+  { key:'organization', label:'Organization', groups:[
+    { key:'storage', label:'Storage' }
+  ]},
+  { key:'special', label:'Special', groups:[
+    { key:'special', label:null }
+  ]},
+  { key:'transportation', label:'Transportation', groups:[
+    { key:'transport-vehicles', label:'Vehicle Transport' },
+    { key:'transport-railway', label:'Railway Transport' }
+  ]},
+];
+
+// Exact in-group ordering follows the left-to-right order in the reference.
+// Any future building assigned to a group but not listed here is appended.
+const MENU_ITEM_ORDER = {
+  extractors:['miner_mk1','miner_mk2','miner_mk3','water_extractor','oil_extractor','resource_well_pressurizer','resource_well_extractor'],
+  smelters:['smelter','foundry'],
+  manufacturers:['constructor','assembler','manufacturer','packager','refinery','blender','particle_accelerator','quantum_encoder','converter'],
+  'power-gen':['biomass_burner','coal_generator','fuel_generator','geothermal','nuclear_plant','alien_power_augmenter'],
+  'power-grid':['power_storage'],
+  'logistics-pipelines':['pipe_junction_t','pipe_junction_cross','pipeline_pump_mk1','pipeline_pump_mk2','valve'],
+  'logistics-sorting':['merger','priority_merger','splitter','smart_splitter','programmable_splitter'],
+  storage:['storage','industrial_storage','fluid_buffer','industrial_fluid_buffer','dimensional_depot_uploader'],
+  special:['awesome_sink'],
+  'transport-vehicles':['truck_station','fluid_truck_station','drone_port'],
+  'transport-railway':['train_station','freight_platform','fluid_freight_platform','empty_platform']
+};
+
+const MENU_TOOL_DATA = {
+  conveyor_belt:{name:'Conveyor Belt',color:'#c8c8c8',hint:'B'},
+  pipeline:{name:'Pipeline',color:'#FA9549',hint:'P'}
+};
+
+const BUILDING_DATA = {
+  // Set each image filename below, for example: image:'constructor.png'.
+  // Building PNGs are loaded from ./building_assets/ and may contain transparency.
+  // ── Extractors ──
+  miner_mk1:{name:'Miner Mk.1',image:'MinerMk1_static.png',w:6,h:14,z:18,color:'#8B7D6B',category:'extractors',
+    inputs:[],outputs:[{type:'belt',x:0,y:7}]},
+  miner_mk2:{name:'Miner Mk.2',image:'MinerMk2_static.png',w:6,h:14,z:18,color:'#7B8F6B',category:'extractors',
+    inputs:[],outputs:[{type:'belt',x:0,y:7}]},
+  miner_mk3:{name:'Miner Mk.3',image:'Miner_Mk3_Static.png',w:6,h:14,z:18,color:'#5B7F4B',category:'extractors',
+    inputs:[],outputs:[{type:'belt',x:0,y:7}]},
+  water_extractor:{name:'Water Extractor',image:'SM_WaterPump_01.png',w:20,h:19.5,z:26,color:'#3B6B8B',category:'extractors',
+    inputs:[],outputs:[{type:'pipe',x:0,y:9.75}]},
+  oil_extractor:{name:'Oil Extractor',image:'OilPump_static.png',w:8,h:14,z:20,color:'#2B4B3B',category:'extractors',
+    inputs:[],outputs:[{type:'pipe',x:0,y:7}]},
+  resource_well_pressurizer:{name:'Resource Well Pressurizer',image:'SM_Fracker_01.png',abbr:'RWP',w:20,h:20,z:23,color:'#6D7F8D',category:'extractors',
+    inputs:[],outputs:[]},
+  resource_well_extractor:{name:'Resource Well Extractor',image:'SM_FrackerExtractor_01.png',abbr:'RWE',w:4,h:4,z:5,color:'#4F8FA8',category:'extractors',
+    inputs:[],outputs:[{type:'pipe',x:0,y:-2}]},
+
+  // ── Smelters ──
+  smelter:{name:'Smelter',image:'SmelterMk1_static.png',w:5,h:10,z:8.5,color:'#e67e22',category:'smelters',
+    inputs:[{type:'belt',x:0,y:-5}],outputs:[{type:'belt',x:0,y:5}]},
+  foundry:{name:'Foundry',image:'FoundryMk1_static.png',w:10,h:9,z:9,color:'#c0392b',category:'smelters',
+    inputs:[{type:'belt',x:-2.5,y:-4.5},{type:'belt',x:2,y:-4.5}],
+    outputs:[{type:'belt',x:-2.5,y:4.5}]},
+
+  // ── Production ──
+  constructor:{name:'Constructor',image:'ConstructorMk1_static.png',w:7.9,h:9.9,z:8,color:'#f1c40f',category:'manufacturers',
+    inputs:[{type:'belt',x:0,y:-4.95}],outputs:[{type:'belt',x:0,y:4.95}]},
+  assembler:{name:'Assembler',image:'AssemblerMk1_static.png',w:9,h:16,z:11,color:'#3498db',category:'manufacturers',
+    inputs:[{type:'belt',x:-2.2,y:-8},{type:'belt',x:1.8,y:-8}],
+    outputs:[{type:'belt',x:0,y:8}]},
+  manufacturer:{name:'Manufacturer',image:'SM_Manufacturer.png',w:18,h:20,z:12,color:'#9b59b6',category:'manufacturers',
+    inputs:[{type:'belt',x:-5,y:-10},{type:'belt',x:-1.7,y:-10},{type:'belt',x:1.7,y:-10},{type:'belt',x:5,y:-10}],
+    outputs:[{type:'belt',x:0,y:10}]},
+  refinery:{name:'Refinery',image:'SM_OilRefinery_01.png',w:10,h:22,z:30,color:'#2ecc71',category:'manufacturers',
+    inputs:[{type:'belt',x:-2,y:-11},{type:'pipe',x:2,y:-11}],
+    outputs:[{type:'belt',x:-2,y:11},{type:'pipe',x:2,y:11}]},
+  packager:{name:'Packager',image:'SM_Packager_01.png',w:8,h:8,z:12,color:'#1abc9c',category:'manufacturers',
+    inputs:[{type:'belt',x:0,y:-4},{type:'pipe',x:0,y:-4}],
+    outputs:[{type:'belt',x:0,y:4},{type:'pipe',x:0,y:4}]},
+  blender:{name:'Blender',image:'blender.png',w:18,h:16,z:15,color:'#e84393',category:'manufacturers',
+    inputs:[{type:'belt',x:-5,y:-8},{type:'belt',x:-1.7,y:-8},{type:'pipe',x:1.7,y:-8},{type:'pipe',x:5,y:-8}],
+    outputs:[{type:'belt',x:-5,y:8},{type:'pipe',x:-1.7,y:8}]},
+  particle_accelerator:{name:'Particle Accelerator',image:'SM_HadronCollider_01.png',w:38,h:24,z:32,color:'#00cec9',category:'manufacturers',
+    inputs:[{type:'belt',x:15,y:-12,pillRotation:90},{type:'belt',x:12,y:-12},{type:'pipe',x:9,y:-12}],outputs:[{type:'belt',x:-15.5,y:11,pillRotation:90}]},
+  quantum_encoder:{name:'Quantum Encoder',image:'SM_QuantumEncoder_01.png',w:22,h:50,z:18,color:'#6c5ce7',category:'manufacturers',
+    inputs:[{type:'belt',x:-6,y:-21},{type:'belt',x:-1.7,y:-25},{type:'belt',x:1.7,y:-25},{type:'pipe',x:6,y:-21}],
+    outputs:[{type:'pipe',x:2,y:25}, {type:'belt',x:-2,y:25}]},
+  converter:{name:'Converter',image:'SM_Converter_01.png',w:16,h:16,z:18,color:'#fd79a8',category:'manufacturers',
+    inputs:[{type:'belt',x:-2,y:-8},{type:'belt',x:2,y:-8}],
+    outputs:[{type:'belt',x:2,y:8},{type:'pipe',x:-2,y:8}]},
+
+  // ── Power Generation ──
+  biomass_burner:{name:'Biomass Burner',image:'HubBiomass_static_LOD0.png',w:8,h:8,z:10,color:'#27ae60',category:'power-gen',
+    inputs:[{type:'belt',x:0,y:-3.5}],outputs:[]},
+  coal_generator:{name:'Coal Generator',image:'GeneratorCoal_static.png',w:10,h:26,z:36,color:'#2c3e50',category:'power-gen',
+    inputs:[{type:'belt',x:-2.5,y:-13},{type:'pipe',x:2.5,y:-13}],outputs:[]},
+  fuel_generator:{name:'Fuel Generator',image:'SM_GeneratorFuel_01.png',w:20,h:20,z:27,color:'#e74c3c',category:'power-gen',
+    inputs:[{type:'pipe',x:0,y:-10}],outputs:[]},
+  geothermal:{name:'Geothermal Generator',image:'SM_GeneratorGeoThermal_01.png',w:19,h:20,z:34,color:'#f39c12',category:'power-gen',
+    inputs:[],outputs:[]},
+  nuclear_plant:{name:'Nuclear Power Plant',image:'SM_Generator_Nuclear.png',w:36,h:43,z:39,color:'#e74c3c',category:'power-gen',
+    inputs:[{type:'belt',x:-4,y:-21.5},{type:'pipe',x:4,y:-21.5}],
+    outputs:[{type:'belt',x:0,y:21.5}]},
+  alien_power_augmenter:{name:'Alien Power Augmenter',image:'SM_AlienPower_01.png',abbr:'APA',w:28,h:28,z:28,color:'#8E44AD',category:'power-gen',
+    inputs:[{type:'belt',x:0,y:-13}],outputs:[]},
+
+  // ── Power Grid ──
+  power_storage:{name:'Power Storage',image:'SM_PowerStorage_01.png',w:6,h:6,z:12,color:'#7f8c8d',category:'power-grid',
+    inputs:[],outputs:[]},
+
+  // ── Conveyor Logistics ──
+  splitter:{name:'Splitter',image:'SM_Splitter_01.png',abbr:'S',w:4,h:4,z:3,color:'#bdc3c7',category:'logistics-sorting',
+    inputs:[{type:'belt',x:0,y:-2}],
+    outputs:[{type:'belt',x:-2,y:0},{type:'belt',x:0,y:2},{type:'belt',x:2,y:0}]},
+  smart_splitter:{name:'Smart Splitter',image:'SM_Splitter_01.png',abbr:'SS',w:4,h:4,z:3,color:'#95a5a6',category:'logistics-sorting',
+    inputs:[{type:'belt',x:0,y:-2}],
+    outputs:[{type:'belt',x:-2,y:0},{type:'belt',x:0,y:2},{type:'belt',x:2,y:0}]},
+  programmable_splitter:{name:'Programmable Splitter',image:'SM_ProgSplitter_01.png',abbr:'PS',w:4,h:4,z:3,color:'#E67E22',category:'logistics-sorting',
+    inputs:[{type:'belt',x:0,y:-2}],
+    outputs:[{type:'belt',x:-2,y:0},{type:'belt',x:0,y:2},{type:'belt',x:2,y:0}]},
+  merger:{name:'Merger',image:'SM_Merger_01.png',abbr:'M',w:4,h:4,z:3,color:'#bdc3c7',category:'logistics-sorting',
+    inputs:[{type:'belt',x:-2,y:0},{type:'belt',x:0,y:-2},{type:'belt',x:2,y:0}],
+    outputs:[{type:'belt',x:0,y:2}]},
+  priority_merger:{name:'Priority Merger',image:'SM_ConveyorPrioLift_01.png',abbr:'PM',w:4,h:4,z:3,color:'#D4AC0D',category:'logistics-sorting',
+    inputs:[{type:'belt',x:-2,y:0},{type:'belt',x:0,y:-2},{type:'belt',x:2,y:0}],
+    outputs:[{type:'belt',x:0,y:2}]},
+
+  // ── Pipeline Logistics ──
+  pipe_junction_cross:{name:'Pipeline Junction Cross',image:'SM_Pipe_Junction_Cross_01.png',abbr:'PJC',w:4,h:4,z:2,color:'#5DADE2',category:'logistics-pipelines',
+    inputs:[{type:'pipe',x:-2,y:0},{type:'pipe',x:0,y:-2}],
+    outputs:[{type:'pipe',x:2,y:0},{type:'pipe',x:0,y:2}]},
+  pipe_junction_t:{name:'Pipeline Junction T',image:'SM_PipeJunction_T_01.png',abbr:'PJT',w:4,h:3,z:2,color:'#5DADE2',category:'logistics-pipelines',
+    inputs:[{type:'pipe',x:0,y:-2}],
+    outputs:[{type:'pipe',x:2,y:0.4},{type:'pipe',x:-2,y:0.4}]},
+  pipeline_pump_mk1:{name:'Pipeline Pump Mk.1',image:'SM_PipePump.png',abbr:'PP1',w:2,h:4,z:2,color:'#E67E22',category:'logistics-pipelines',
+    inputs:[{type:'pipe',x:0,y:-2}],outputs:[{type:'pipe',x:0,y:2}]},
+  pipeline_pump_mk2:{name:'Pipeline Pump Mk.2',image:'SM_PipePumpMk2_01.png',abbr:'PP2',w:2,h:5,z:2,color:'#D35400',category:'logistics-pipelines',
+    inputs:[{type:'pipe',x:0,y:-2.5}],outputs:[{type:'pipe',x:0,y:2.5}]},
+  valve:{name:'Valve',image:'SM_PipeValve_01.png',abbr:'V',w:2,h:2,z:2,color:'#C97A40',category:'logistics-pipelines',
+    inputs:[{type:'pipe',x:0,y:-1}],outputs:[{type:'pipe',x:0,y:1}]},
+
+  // ── Organization ──
+  storage:{name:'Storage Container',image:'StorageContainerMk1_static.png',w:5,h:11,z:4,color:'#e74c3c',category:'storage',
+    inputs:[{type:'belt',x:0,y:-5}],outputs:[{type:'belt',x:0,y:5}]},
+  industrial_storage:{name:'Ind. Storage',image:'StorageContainerMk2_static.png',w:5,h:11,z:8,color:'#c0392b',category:'storage',
+    inputs:[{type:'belt',x:-1.25,y:-5},{type:'belt',x:1.25,y:-5}],
+    outputs:[{type:'belt',x:-1.25,y:5},{type:'belt',x:1.25,y:5}]},
+  fluid_buffer:{name:'Fluid Buffer',image:'SM_FluidContainer_01.png',w:6,h:6,z:8,color:'#2980b9',category:'storage',
+    inputs:[{type:'pipe',x:0,y:-3}],outputs:[{type:'pipe',x:0,y:3}]},
+  industrial_fluid_buffer:{name:'Ind. Fluid Buffer',image:'SM_IndustrialFluidContainer.png',w:14,h:14,z:12,color:'#2471a3',category:'storage',
+    inputs:[{type:'pipe',x:0,y:-7.5}],outputs:[{type:'pipe',x:0,y:7.5}]},
+  dimensional_depot_uploader:{name:'Dimensional Depot Uploader',image:'SM_CentralStorage_01.png',abbr:'DDU',w:5,h:10,z:4.25,color:'#6C5CE7',category:'storage',
+    inputs:[{type:'belt',x:0,y:-5}],outputs:[]},
+
+  // ── Special ──
+  awesome_sink:{name:'AWESOME Sink',image:'SM_ResourceSink.png',abbr:'SINK',w:16,h:13,z:24,color:'#9B59B6',category:'special',
+    inputs:[{type:'belt',x:2,y:-6.5}],outputs:[]},
+
+  // ── Vehicle Transport ──
+  truck_station:{name:'Truck Station',image:'TruckStation_static.png',abbr:'TS',w:16,h:22,z:12,color:'#566573',category:'transport-vehicles',
+    inputs:[{type:'belt',x:3.25,y:-10},{type:'belt',x:6.5,y:-10},{type:'belt',x:0,y:-10}],
+	outputs:[{type:'belt',x:-6.5,y:-10},{type:'belt',x:-3.25,y:-10}]},
+  fluid_truck_station:{name:'Fluid Truck Station',image:'SM_TruckStation_Fluid_01.png',abbr:'FTS',w:16,h:22,z:12,color:'#2874A6',category:'transport-vehicles',
+    inputs:[{type:'belt',x:6.5,y:-10},{type:'pipe',x:-3.25,y:-10},{type:'pipe',x:0,y:-10}],
+    outputs:[{type:'pipe',x:3.25,y:-10},{type:'pipe',x:-6.5,y:-10}]},
+  drone_port:{name:'Drone Port',image:'SM_DroneStation_01.png',abbr:'DP',w:24,h:24,z:15,color:'#5B2C6F',category:'transport-vehicles',
+    inputs:[{type:'belt',x:7,y:-11},{type:'belt',x:-6,y:-11}],outputs:[{type:'belt',x:-9,y:-11}]},
+
+  // ── Railway Transport ──
+  train_station:{name:'Train Station',image:'SM_Trainstation_01.png',abbr:'STN',w:16,h:34,z:20,color:'#5D6D7E',category:'transport-railway',
+    inputs:[],outputs:[]},
+  freight_platform:{name:'Freight Platform',image:'SM_DockingPlatform_02.png',abbr:'FP',w:16,h:34,z:20,color:'#7F8C8D',category:'transport-railway',
+    inputs:[{type:'belt',x:-6,y:-17},{type:'belt',x:-2,y:-17}],outputs:[{type:'belt',x:2,y:-17},{type:'belt',x:6,y:-17}]},
+  fluid_freight_platform:{name:'Fluid Freight Platform',image:'SM_DockingPlatform_01.png',abbr:'FFP',w:16,h:34,z:20,color:'#2E86C1',category:'transport-railway',
+    inputs:[{type:'pipe',x:-6,y:-17},{type:'pipe',x:-2,y:-17}],outputs:[{type:'pipe',x:2,y:-17},{type:'pipe',x:6,y:-17}]},
+  empty_platform:{name:'Empty Platform',image:'SM_TrainPlatformEmpty.png',abbr:'EP',w:34,h:16,z:1,color:'#707B7C',category:'transport-railway',
+    inputs:[],outputs:[]}
+};
+
+const BUILDING_KEYS = Object.keys(BUILDING_DATA);
+
+
+// Build-cost metadata is intentionally separate from BUILDING_DATA so adding a new
+// machine stays simple: add its dimensions/I-O above, then add one cost entry here.
+const BUILD_COSTS = {
+  miner_mk1:{'Portable Miner':1,'Iron Plate':10,'Concrete':10},
+  miner_mk2:{'Portable Miner':2,'Encased Industrial Beam':10,'Steel Pipe':20,'Modular Frame':10},
+  miner_mk3:{'Portable Miner':3,'Steel Pipe':50,'Supercomputer':5,'Fused Modular Frame':10,'Turbo Motor':3},
+  water_extractor:{'Copper Sheet':20,'Reinforced Iron Plate':10,'Rotor':10},
+  oil_extractor:{'Motor':15,'Encased Industrial Beam':20,'Cable':60},
+  resource_well_pressurizer:{'Radio Control Unit':10,'Heavy Modular Frame':25,'Motor':50,'Alclad Aluminum Sheet':50,'Rubber':100},
+  resource_well_extractor:{'Steel Beam':10,'Aluminum Casing':10},
+  smelter:{'Iron Rod':5,'Wire':8},
+  foundry:{'Modular Frame':10,'Rotor':10,'Concrete':20},
+  constructor:{'Reinforced Iron Plate':2,'Cable':8},
+  assembler:{'Reinforced Iron Plate':8,'Rotor':4,'Cable':10},
+  manufacturer:{'Motor':10,'Modular Frame':20,'Plastic':50,'Cable':50},
+  refinery:{'Motor':10,'Encased Industrial Beam':10,'Steel Pipe':30,'Copper Sheet':20},
+  packager:{'Steel Beam':20,'Rubber':10,'Plastic':10},
+  blender:{'Computer':10,'Heavy Modular Frame':10,'Motor':20,'Aluminum Casing':50},
+  particle_accelerator:{'Turbo Motor':10,'Supercomputer':10,'Fused Modular Frame':25,'Cooling System':50,'Quickwire':500},
+  quantum_encoder:{'Turbo Motor':20,'Supercomputer':20,'Cooling System':50,'Time Crystal':50,'Ficsite Trigon':100},
+  converter:{'Fused Modular Frame':10,'Cooling System':25,'Radio Control Unit':50,'SAM Fluctuator':100},
+  biomass_burner:{'Iron Plate':15,'Iron Rod':15,'Wire':25},
+  coal_generator:{'Reinforced Iron Plate':20,'Rotor':10,'Cable':30},
+  fuel_generator:{'Motor':15,'Encased Industrial Beam':15,'Copper Sheet':30,'Rubber':50,'Quickwire':50},
+  geothermal:{'Motor':10,'High-Speed Connector':25,'Modular Frame':25,'Copper Sheet':50,'Wire':250},
+  nuclear_plant:{'Supercomputer':10,'Heavy Modular Frame':25,'Alclad Aluminum Sheet':100,'Cable':200,'Concrete':250},
+  alien_power_augmenter:{'Somersloop':10,'SAM Fluctuator':50,'Cable':100,'Encased Industrial Beam':50,'Motor':25,'Computer':10},
+  power_storage:{'Encased Industrial Beam':5,'Modular Frame':10,'Wire':100},
+  splitter:{'Iron Plate':2,'Cable':2},
+  smart_splitter:{'Reinforced Iron Plate':2,'Rotor':2,'AI Limiter':1},
+  programmable_splitter:{'Heavy Modular Frame':1,'Computer':2,'AI Limiter':5},
+  merger:{'Iron Plate':2,'Iron Rod':2},
+  priority_merger:{'Reinforced Iron Plate':2,'Modular Frame':1,'Crystal Oscillator':1},
+  pipe_junction_cross:{'Copper Sheet':5},
+  pipe_junction_t:{'Copper Sheet':5},
+  pipeline_pump_mk1:{'Copper Sheet':2,'Rotor':2},
+  pipeline_pump_mk2:{'Heavy Modular Frame':1,'Motor':2,'Plastic':10},
+  valve:{'Rubber':4,'Steel Beam':4},
+  storage:{'Iron Plate':10,'Iron Rod':10},
+  industrial_storage:{'Steel Beam':20,'Steel Pipe':20},
+  fluid_buffer:{'Copper Sheet':10,'Modular Frame':5},
+  industrial_fluid_buffer:{'Encased Industrial Beam':5,'Copper Sheet':10,'Plastic':25},
+  dimensional_depot_uploader:{'Mercer Sphere':1,'SAM Fluctuator':10,'Modular Frame':10,'Wire':100},
+  awesome_sink:{'Reinforced Iron Plate':15,'Cable':30,'Concrete':45},
+  truck_station:{'Modular Frame':15,'Rotor':20,'Cable':50},
+  fluid_truck_station:{'Modular Frame':15,'Stator':20,'Rubber':20,'Plastic':50},
+  drone_port:{'Heavy Modular Frame':20,'High-Speed Connector':20,'Alclad Aluminum Sheet':50,'Aluminum Casing':50,'Radio Control Unit':10},
+  train_station:{'Encased Industrial Beam':10,'Plastic':50,'Concrete':50,'Wire':200},
+  freight_platform:{'Motor':5,'Encased Industrial Beam':10,'Plastic':25,'Concrete':50,'Wire':100},
+  fluid_freight_platform:{'Motor':5,'Encased Industrial Beam':10,'Plastic':25,'Concrete':50,'Wire':100},
+  empty_platform:{'Encased Industrial Beam':10,'Concrete':50},
+};
+const FOUNDATION_COST = {'Concrete':5,'Iron Plate':2};
+const CONNECTOR_TIERS = {
+  belt: {
+    1:{label:'Mk.1',perTwoMeters:{'Iron Plate':1}},
+    2:{label:'Mk.2',perTwoMeters:{'Reinforced Iron Plate':1}},
+    3:{label:'Mk.3',perTwoMeters:{'Steel Beam':1}},
+    4:{label:'Mk.4',perTwoMeters:{'Encased Industrial Beam':1}},
+    5:{label:'Mk.5',perTwoMeters:{'Alclad Aluminum Sheet':1}},
+    6:{label:'Mk.6',perTwoMeters:{'Time Crystal':1, 'Ficsite Trigon':1}}
+  },
+  pipe: {
+    1:{label:'Mk.1',perTwoMeters:{'Copper Sheet':1}},
+    2:{label:'Mk.2',perTwoMeters:{'Copper Sheet':2, 'Plastic':1}}
+  }
+};
+const CONNECTOR_COSTS = CONNECTOR_TIERS;
+
+// ═══════════════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════════════
+const camera = { x: 0, y: 0, zoom: 1 };
+const state = {
+  tool: null,                // null=select, labels/connectors/lifts, or a building key
+  rotation: 0,               // 0|90|180|270
+  dragging: null,            // null | 'pan' | 'select' | 'place' | 'label'
+  dragStart: null,           // {x,y} screen coords
+  worldDragStart: null,      // {x,y} world coords
+  mouseX: 0, mouseY: 0,      // screen coords
+  worldX: 0, worldY: 0,      // world coords
+  shiftHeld: false,
+  ctrlHeld: false,
+  selected: [],              // building ids
+  moveStart: null,           // multi-building move snapshot
+  nextId: 1,
+  floor: 0,
+  floors: {'0':0},           // signed floor id -> height in meters; floor 0 remains the reference floor
+  buildingIdMap: new Map(),  // id -> building
+  connectorTier: { belt:1, pipe:1 },
+  liftDirection: { belt:'up', pipe:'up' },
+};
+
+// Placed objects
+const buildings = [];        // {id, type, x, y, rotation, floor}
+const labels = [];           // {id, text, x, y, floor}; deliberately excluded from foundation bounds
+let nextLabelId = 1;
+let nextBeltId = 1;
+let nextLiftId = 1;
+const belts = [];            // [{id, points:[{x,y},...], floor}]
+const pipes = [];            // [{id, points:[{x,y},...], floor}]
+const lifts = [];            // cross-floor conveyor lifts / vertical pipes
+
+// Conveyor/pipe drawing state
+let drawSource = null;       // {x,y} world coords where drawing started, or null
+let drawType = null;         // 'belt' | 'pipe'
+let drawSnapTarget = null;   // I/O point we snapped to for source
+
+// Belt/pipe selection (select mode)
+let selectedBeltId = null;
+let selectedPipeId = null;
+let selectedLiftId = null;
+let editingEndpoint = null;  // {type:'belt'|'pipe', id, pointIdx} while dragging
+
+// Canvas
+const canvas = document.getElementById('editor');
+const ctx = canvas.getContext('2d');
+let W, H;
+let mouseInsideCanvas = false;
+
+// Asset images
+const assets = Object.create(null);
+const assetSourceRects = Object.create(null); // alpha-cropped source rectangles for transparent PNGs
+const assetSprites = Object.create(null);     // lightweight pre-scaled canvases used during the render loop
+let copiedBuildings = [];
+let pastePreview = null;
+let selectedLabelId = null;
+let labelMoveStart = null;
+const settings = { defaultFront: localStorage.getItem('sf2d-default-front') || 'up' };
+let renderDirty = true;
+function invalidateRender() { renderDirty = true; }
+function defaultRotation() { return settings.defaultFront === 'up' ? 180 : 0; }
+function ioPillsDisabled() { return state.ctrlHeld || state.selected.length > 1; }
+
+// ═══════════════════════════════════════════════════════════════
+// CANVAS RESIZE
+// ═══════════════════════════════════════════════════════════════
+let resizeFrame = 0;
+function resize() {
+  const nextW = Math.max(1, Math.round(canvas.parentElement.clientWidth));
+  const nextH = Math.max(1, Math.round(canvas.parentElement.clientHeight));
+  if (nextW === W && nextH === H) return;
+
+  // Resizing a canvas clears its bitmap immediately. Keep a snapshot on screen
+  // while the flex/sidebar transition is running so there is no dark flash.
+  let snapshot = null;
+  const oldW = canvas.width;
+  const oldH = canvas.height;
+  if (oldW > 0 && oldH > 0) {
+    snapshot = document.createElement('canvas');
+    snapshot.width = oldW;
+    snapshot.height = oldH;
+    const snapshotCtx = snapshot.getContext('2d');
+    if (snapshotCtx) snapshotCtx.drawImage(canvas, 0, 0);
+    else snapshot = null;
+  }
+
+  W = nextW;
+  H = nextH;
+  canvas.width = W;
+  canvas.height = H;
+  if (!camera._init) {
+    camera.x = W / 2;
+    camera.y = H / 2;
+    camera._init = true;
+  } else if (snapshot) {
+    ctx.drawImage(snapshot, 0, 0, oldW, oldH, 0, 0, W, H);
+  }
+  if (typeof invalidateRender === 'function') invalidateRender();
+}
+function scheduleResize() {
+  if (resizeFrame) return;
+  resizeFrame = requestAnimationFrame(() => {
+    resizeFrame = 0;
+    resize();
+  });
+}
+window.addEventListener('resize', scheduleResize);
+if ('ResizeObserver' in window) {
+  new ResizeObserver(scheduleResize).observe(canvas.parentElement);
+}
+resize();
+
+// ═══════════════════════════════════════════════════════════════
+// COORDINATE HELPERS
+// ═══════════════════════════════════════════════════════════════
+function screenToWorld(sx, sy) {
+  return {
+    x: (sx - camera.x) / camera.zoom,
+    y: (sy - camera.y) / camera.zoom
+  };
+}
+function worldToScreen(wx, wy) {
+  return {
+    x: wx * camera.zoom + camera.x,
+    y: wy * camera.zoom + camera.y
+  };
+}
+function snapToGrid(val) {
+  return Math.round(val / SCALE) * SCALE;
+}
+
+function orientedBuildingSize(type, rotation) {
+  const d = BUILDING_DATA[type];
+  if (!d) return { w:0, h:0 };
+  return rotation % 180 === 0
+    ? { w:d.w * SCALE, h:d.h * SCALE }
+    : { w:d.h * SCALE, h:d.w * SCALE };
+}
+
+// Snap a building by its nearest pair of perpendicular sides instead of its centre.
+// This keeps odd-width machines (for example a 9m Assembler) aligned to the 1m grid.
+function snapBuildingCenter(type, rotation, desiredX, desiredY) {
+  const size = orientedBuildingSize(type, rotation);
+  function snapAxis(center, span) {
+    const half = span / 2;
+    const alignMin = snapToGrid(center - half) + half;
+    const alignMax = snapToGrid(center + half) - half;
+    const value = Math.abs(alignMin - center) <= Math.abs(alignMax - center) ? alignMin : alignMax;
+    return Math.round(value * 1000) / 1000;
+  }
+  return { x:snapAxis(desiredX, size.w), y:snapAxis(desiredY, size.h) };
+}
+
+function rectsOverlap(a, b) {
+  return !!a && !!b && a.x1 < b.x2 - EPS && a.x2 > b.x1 + EPS && a.y1 < b.y2 - EPS && a.y2 > b.y1 + EPS;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// I/O POINT HELPERS (accounting for rotation)
+// ═══════════════════════════════════════════════════════════════
+function getTransformedPoints(points, rot) {
+  const rad = rot * Math.PI / 180;
+  const c = Math.cos(rad), s = Math.sin(rad);
+  return points.map(p => ({
+    ...p,
+    x: p.x * c - p.y * s,
+    y: p.x * s + p.y * c
+  }));
+}
+function getBuildingIO(b) {
+  const d = BUILDING_DATA[b.type];
+  if (!d) return { inputs:[], outputs:[] };
+  const ioRotation = b.rotation % 360;
+  const inp = getTransformedPoints(d.inputs, ioRotation);
+  const out = getTransformedPoints(d.outputs, ioRotation);
+  return {
+    inputs: inp.map((p,i) => ({...p, type:d.inputs[i].type, pillRotation:Number(d.inputs[i].pillRotation)||0, worldX:b.x+p.x*SCALE, worldY:b.y+p.y*SCALE, buildingId:b.id, buildingType:b.type, idx:i, dir:'input'})),
+    outputs: out.map((p,i) => ({...p, type:d.outputs[i].type, pillRotation:Number(d.outputs[i].pillRotation)||0, worldX:b.x+p.x*SCALE, worldY:b.y+p.y*SCALE, buildingId:b.id, buildingType:b.type, idx:i, dir:'output'}))
+  };
+}
+function getAllIOPoints(building) {
+  const io = getBuildingIO(building);
+  return [...io.inputs, ...io.outputs];
+}
+function getLiftAnchor(lift) {
+  if (!lift) return null;
+  if (lift.sourceAttachment && lift.sourceAttachment.buildingId != null) {
+    const source = getAttachedIO(lift.sourceAttachment);
+    if (source) {
+      lift.x = source.worldX; lift.y = source.worldY;
+      lift.outward = portOutwardDir(source) || lift.outward;
+      lift.pillRotation = Number(source.pillRotation)||0;
+      return { x:lift.x, y:lift.y, outward:lift.outward, pillRotation:lift.pillRotation };
+    }
+  }
+  return { x:lift.x, y:lift.y, outward:normDir(lift.outward)||{x:0,y:1}, pillRotation:Number(lift.pillRotation)||0 };
+}
+function getLiftDestinationIO(lift) {
+  if (!lift) return null;
+  const anchor = getLiftAnchor(lift);
+  const outward = normDir(anchor.outward) || {x:0,y:1};
+  return {
+    x:outward.x, y:outward.y, outward,
+    type:lift.kind, worldX:anchor.x, worldY:anchor.y,
+    liftId:lift.id, liftEnd:'destination', idx:0, dir:lift.portDir || (lift.kind === 'belt' ? 'output' : 'input'),
+    pillRotation:Number(anchor.pillRotation)||0, isLift:true, floor:lift.toFloor
+  };
+}
+function getLiftSourceIO(lift) {
+  // Attached lifts already use the machine/connector beneath them as their source.
+  // A standalone lift exposes its own source port so it can be wired up later.
+  if (!lift || lift.sourceAttachment || lift.sourceConnector) return null;
+  const anchor = getLiftAnchor(lift);
+  const outward = normDir(anchor.outward) || {x:0,y:1};
+  const destinationDir = lift.portDir || (lift.kind === 'belt' ? 'output' : 'input');
+  return {
+    x:outward.x, y:outward.y, outward,
+    type:lift.kind, worldX:anchor.x, worldY:anchor.y,
+    liftId:lift.id, liftEnd:'source', idx:0,
+    dir:lift.kind === 'belt' ? (destinationDir === 'output' ? 'input' : 'output') : 'input',
+    pillRotation:Number(anchor.pillRotation)||0, isLift:true, floor:lift.fromFloor
+  };
+}
+function getLiftIOPointsForFloor(floor) {
+  const out = [];
+  for (const lift of lifts) {
+    if (lift.fromFloor === floor) {
+      const source = getLiftSourceIO(lift);
+      if (source) out.push(source);
+    }
+    if (lift.toFloor === floor) {
+      const destination = getLiftDestinationIO(lift);
+      if (destination) out.push(destination);
+    }
+  }
+  return out;
+}
+function getFloorIOPoints(floor) {
+  const out = [];
+  for (const b of buildings) if (b.floor === floor) out.push(...getAllIOPoints(b));
+  out.push(...getLiftIOPointsForFloor(floor));
+  return out;
+}
+function getBuildingIOAtWorld(wx, wy, typeFilter) {
+  if (ioPillsDisabled()) return null;
+  let best = null, bestDist = Infinity;
+  const halfLong = IO_PILL_WIDTH_WORLD / 2 + IO_PILL_HIT_PADDING_PX / camera.zoom;
+  const halfShort = IO_PILL_HEIGHT_WORLD / 2 + IO_PILL_HIT_PADDING_PX / camera.zoom;
+  for (const b of buildings) {
+    if (b.floor !== state.floor) continue;
+    for (const p of getAllIOPoints(b)) {
+      if (typeFilter && p.type !== typeFilter) continue;
+      const dx = wx - p.worldX, dy = wy - p.worldY;
+      const angle = portPillAngle(p), ca = Math.cos(-angle), sa = Math.sin(-angle);
+      const localX = dx * ca - dy * sa, localY = dx * sa + dy * ca;
+      if (Math.abs(localX) > halfLong || Math.abs(localY) > halfShort) continue;
+      const dist = dx * dx + dy * dy;
+      if (dist < bestDist) { bestDist = dist; best = p; }
+    }
+  }
+  return best;
+}
+function getNearestIO(wx, wy, typeFilter, maxDist) {
+  maxDist = maxDist || 20 * SCALE;
+  let best = null, bestDist = Infinity;
+  for (const p of getFloorIOPoints(state.floor)) {
+    if (typeFilter && p.type !== typeFilter) continue;
+    const dx = wx - p.worldX, dy = wy - p.worldY;
+    const d = Math.sqrt(dx*dx + dy*dy);
+    if (d < bestDist && d < maxDist) { bestDist = d; best = p; }
+  }
+  return best;
+}
+function getIOAtWorld(wx, wy, typeFilter) {
+  if (ioPillsDisabled()) return null;
+  let best = null;
+  let bestDist = Infinity;
+  const halfLong = IO_PILL_WIDTH_WORLD / 2 + IO_PILL_HIT_PADDING_PX / camera.zoom;
+  const halfShort = IO_PILL_HEIGHT_WORLD / 2 + IO_PILL_HIT_PADDING_PX / camera.zoom;
+  for (const p of getFloorIOPoints(state.floor)) {
+    if (typeFilter && p.type !== typeFilter) continue;
+    const dx = wx - p.worldX;
+    const dy = wy - p.worldY;
+    const angle = portPillAngle(p);
+    const ca = Math.cos(-angle), sa = Math.sin(-angle);
+    const localX = dx * ca - dy * sa;
+    const localY = dx * sa + dy * ca;
+    if (Math.abs(localX) > halfLong || Math.abs(localY) > halfShort) continue;
+    const dist = dx * dx + dy * dy;
+    if (dist < bestDist) { bestDist = dist; best = p; }
+  }
+  return best;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// BELT/PIPE MANHATTAN ROUTING + HIT TEST
+// ═══════════════════════════════════════════════════════════════
+const EPS = 0.001;
+const PORT_EXIT_LEN = 2 * SCALE;              // leave ports before the first turn
+const ROUTE_OBSTACLE_PADDING = 0.75 * SCALE; // hard collision padding around buildings
+const ROUTE_TURN_PENALTY = 4 * SCALE;        // prefer fewer 90° turns
+const ROUTE_CLEARANCE_TARGET = 2 * SCALE;    // soft target used to avoid visually hugging buildings
+const ROUTE_HUG_PENALTY = 1.35;              // weight for low-clearance route segments
+const ROUTE_CORRIDOR_BALANCE_PENALTY = 1.25; // favour equal spacing inside close-building corridors
+const ROUTE_CORRIDOR_MAX_GAP = 24 * SCALE;   // only add midlines for reasonably nearby buildings
+const ROUTE_GUIDE_CACHE = new WeakMap();
+// Physical world-space sizes. These scale on screen with the factory.
+const CONNECTOR_WIDTH_WORLD = 1 * SCALE;
+// Belt appearance controls (world-space, so they scale with zoom):
+const BELT_BASE_COLOR = '#c8c8c8';
+const BELT_STRIP_COLOR = '#666';
+const BELT_STRIP_THICKNESS_WORLD = 0.10 * SCALE; // thickness of each cross-strip
+const BELT_STRIP_LENGTH_WORLD = 0.82 * CONNECTOR_WIDTH_WORLD; // strip width across the belt
+const BELT_STRIP_SPACING_WORLD = 0.65 * SCALE;   // distance between strip centres
+const PIPE_COLOR = '#FA9549';
+const IO_PILL_WIDTH_WORLD = 2 * SCALE;
+const IO_PILL_HEIGHT_WORLD = IO_PILL_WIDTH_WORLD / 4; // preserve the 4:1 pill ratio
+const IO_PILL_HIT_PADDING_PX = 5;
+const CONNECTOR_HIT_PADDING_PX = 5;
+
+function almostEqual(a, b) { return Math.abs(a - b) < EPS; }
+function samePoint(a, b) { return almostEqual(a.x, b.x) && almostEqual(a.y, b.y); }
+function clonePoint(p) { return { x:p.x, y:p.y }; }
+
+function pointKey(p) {
+  return `${Math.round(p.x * 1000) / 1000},${Math.round(p.y * 1000) / 1000}`;
+}
+
+function uniqueSorted(vals) {
+  const out = [];
+  for (const v of vals.slice().sort((a,b) => a - b)) {
+    if (!out.length || !almostEqual(out[out.length - 1], v)) out.push(v);
+  }
+  return out;
+}
+
+function pushPoint(pts, p) {
+  if (!p) return;
+  const q = { x:p.x, y:p.y };
+  if (!pts.length || !samePoint(pts[pts.length - 1], q)) pts.push(q);
+}
+
+function cleanPath(pts) {
+  const compact = [];
+  for (const p of pts) pushPoint(compact, p);
+  return compact.filter((p, i) => {
+    if (i === 0 || i === compact.length - 1) return true;
+    const a = compact[i - 1], c = compact[i + 1];
+    return !((almostEqual(a.x, p.x) && almostEqual(p.x, c.x)) ||
+             (almostEqual(a.y, p.y) && almostEqual(p.y, c.y)));
+  });
+}
+
+function getObstacleRects(floor, margin = 0) {
+  return buildings.filter(b => b.floor === floor).map(b => {
+    const d = BUILDING_DATA[b.type];
+    if (!d) return null;
+    const w2 = d.w * SCALE / 2, h2 = d.h * SCALE / 2;
+    let bx1 = b.x - w2, bx2 = b.x + w2, by1 = b.y - h2, by2 = b.y + h2;
+    if (b.rotation % 180 !== 0) {
+      bx1 = b.x - h2; bx2 = b.x + h2;
+      by1 = b.y - w2; by2 = b.y + w2;
+    }
+    return { x1: bx1 - margin, x2: bx2 + margin, y1: by1 - margin, y2: by2 + margin, buildingId:b.id };
+  }).filter(Boolean);
+}
+
+function segClear(ax, ay, bx, by, obstacles) {
+  if (almostEqual(ax, bx) && almostEqual(ay, by)) return true;
+  for (const o of obstacles) {
+    if (almostEqual(ax, bx)) {
+      if (ax > o.x1 + EPS && ax < o.x2 - EPS) {
+        const yMin = Math.min(ay, by), yMax = Math.max(ay, by);
+        if (yMin < o.y2 - EPS && yMax > o.y1 + EPS) return false;
+      }
+    } else if (almostEqual(ay, by)) {
+      if (ay > o.y1 + EPS && ay < o.y2 - EPS) {
+        const xMin = Math.min(ax, bx), xMax = Math.max(ax, bx);
+        if (xMin < o.x2 - EPS && xMax > o.x1 + EPS) return false;
+      }
+    } else {
+      return false;
+    }
+  }
+  return true;
+}
+
+function pathClear(pts, obstacles) {
+  for (let i = 0; i < pts.length - 1; i++) {
+    if (!segClear(pts[i].x, pts[i].y, pts[i+1].x, pts[i+1].y, obstacles)) return false;
+  }
+  return true;
+}
+
+function axisForDir(dir) {
+  const d = normDir(dir);
+  if (!d) return null;
+  return d.x !== 0 ? 'H' : 'V';
+}
+
+function segmentRectClearance(ax, ay, bx, by, rect) {
+  const sx1 = Math.min(ax, bx), sx2 = Math.max(ax, bx);
+  const sy1 = Math.min(ay, by), sy2 = Math.max(ay, by);
+  const dx = sx2 < rect.x1 ? rect.x1 - sx2 : (sx1 > rect.x2 ? sx1 - rect.x2 : 0);
+  const dy = sy2 < rect.y1 ? rect.y1 - sy2 : (sy1 > rect.y2 ? sy1 - rect.y2 : 0);
+  return Math.hypot(dx, dy);
+}
+
+function intervalOverlapLength(a1, a2, b1, b2) {
+  return Math.max(0, Math.min(a2, b2) - Math.max(a1, b1));
+}
+
+function getCorridorGuides(obstacles) {
+  if (ROUTE_GUIDE_CACHE.has(obstacles)) return ROUTE_GUIDE_CACHE.get(obstacles);
+  const vertical = [], horizontal = [];
+  for (let i = 0; i < obstacles.length; i++) {
+    const a = obstacles[i];
+    let nearestRight = null, nearestRightGap = Infinity;
+    let nearestBelow = null, nearestBelowGap = Infinity;
+    for (let j = 0; j < obstacles.length; j++) {
+      if (i === j) continue;
+      const b = obstacles[j];
+      if (b.x1 > a.x2 + EPS && rangesOverlap(a.y1, a.y2, b.y1, b.y2)) {
+        const gap = b.x1 - a.x2;
+        if (gap < nearestRightGap) { nearestRightGap = gap; nearestRight = b; }
+      }
+      if (b.y1 > a.y2 + EPS && rangesOverlap(a.x1, a.x2, b.x1, b.x2)) {
+        const gap = b.y1 - a.y2;
+        if (gap < nearestBelowGap) { nearestBelowGap = gap; nearestBelow = b; }
+      }
+    }
+    if (nearestRight && nearestRightGap <= ROUTE_CORRIDOR_MAX_GAP) {
+      vertical.push({
+        x1:a.x2, x2:nearestRight.x1, mid:(a.x2 + nearestRight.x1) / 2,
+        y1:Math.max(a.y1, nearestRight.y1), y2:Math.min(a.y2, nearestRight.y2)
+      });
+    }
+    if (nearestBelow && nearestBelowGap <= ROUTE_CORRIDOR_MAX_GAP) {
+      horizontal.push({
+        y1:a.y2, y2:nearestBelow.y1, mid:(a.y2 + nearestBelow.y1) / 2,
+        x1:Math.max(a.x1, nearestBelow.x1), x2:Math.min(a.x2, nearestBelow.x2)
+      });
+    }
+  }
+  const guides = { vertical, horizontal };
+  ROUTE_GUIDE_CACHE.set(obstacles, guides);
+  return guides;
+}
+
+function segmentCorridorBalancePenalty(ax, ay, bx, by, obstacles) {
+  const guides = getCorridorGuides(obstacles);
+  let penalty = 0;
+  if (almostEqual(ax, bx)) {
+    const y1 = Math.min(ay, by), y2 = Math.max(ay, by);
+    for (const c of guides.vertical) {
+      if (ax < c.x1 - EPS || ax > c.x2 + EPS) continue;
+      const overlap = intervalOverlapLength(y1, y2, c.y1, c.y2);
+      if (overlap < EPS) continue;
+      const halfGap = Math.max(EPS, (c.x2 - c.x1) / 2);
+      const imbalance = Math.min(1, Math.abs(ax - c.mid) / halfGap);
+      penalty += overlap * ROUTE_CORRIDOR_BALANCE_PENALTY * imbalance;
+    }
+  } else if (almostEqual(ay, by)) {
+    const x1 = Math.min(ax, bx), x2 = Math.max(ax, bx);
+    for (const c of guides.horizontal) {
+      if (ay < c.y1 - EPS || ay > c.y2 + EPS) continue;
+      const overlap = intervalOverlapLength(x1, x2, c.x1, c.x2);
+      if (overlap < EPS) continue;
+      const halfGap = Math.max(EPS, (c.y2 - c.y1) / 2);
+      const imbalance = Math.min(1, Math.abs(ay - c.mid) / halfGap);
+      penalty += overlap * ROUTE_CORRIDOR_BALANCE_PENALTY * imbalance;
+    }
+  }
+  return penalty;
+}
+
+function segmentClearancePenalty(ax, ay, bx, by, obstacles) {
+  const length = Math.abs(ax - bx) + Math.abs(ay - by);
+  if (length < EPS || !obstacles.length) return 0;
+  let nearest = Infinity;
+  for (const o of obstacles) nearest = Math.min(nearest, segmentRectClearance(ax, ay, bx, by, o));
+  let penalty = 0;
+  if (nearest < ROUTE_CLEARANCE_TARGET) {
+    const pressure = (ROUTE_CLEARANCE_TARGET - nearest) / ROUTE_CLEARANCE_TARGET;
+    penalty += length * ROUTE_HUG_PENALTY * pressure * pressure;
+  }
+  return penalty + segmentCorridorBalancePenalty(ax, ay, bx, by, obstacles);
+}
+
+function routePathCost(pts, obstacles, srcDir, dstDir) {
+  if (!pts || pts.length < 2) return Infinity;
+  let cost = 0;
+  let previousAxis = axisForDir(srcDir);
+  for (let i = 0; i < pts.length - 1; i++) {
+    const a = pts[i], b = pts[i + 1];
+    const axis = almostEqual(a.x, b.x) ? 'V' : 'H';
+    const distance = Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
+    if (previousAxis && previousAxis !== axis) cost += ROUTE_TURN_PENALTY;
+    cost += distance + segmentClearancePenalty(a.x, a.y, b.x, b.y, obstacles);
+    previousAxis = axis;
+  }
+  const destinationAxis = axisForDir(dstDir);
+  if (destinationAxis && previousAxis && previousAxis !== destinationAxis) cost += ROUTE_TURN_PENALTY;
+  return cost;
+}
+
+function rangesOverlap(a1, a2, b1, b2) {
+  return Math.min(a2, b2) > Math.max(a1, b1) + EPS;
+}
+
+function getCorridorMidlines(obstacles) {
+  const guides = getCorridorGuides(obstacles);
+  return {
+    xs:uniqueSorted(guides.vertical.map(c => c.mid)),
+    ys:uniqueSorted(guides.horizontal.map(c => c.mid))
+  };
+}
+
+function removeCollinear(pts) {
+  return cleanPath(pts);
+}
+
+function normDir(dir) {
+  if (!dir) return null;
+  if (Math.abs(dir.x) >= Math.abs(dir.y) && Math.abs(dir.x) > 0) return { x: Math.sign(dir.x), y: 0 };
+  if (Math.abs(dir.y) > 0) return { x: 0, y: Math.sign(dir.y) };
+  return null;
+}
+
+function portOutwardDir(io) {
+  if (!io) return null;
+  if (io.outward) return normDir(io.outward);
+  if (Math.abs(io.x) > Math.abs(io.y)) return { x: Math.sign(io.x) || 0, y: 0 };
+  return { x: 0, y: Math.sign(io.y) || 0 };
+}
+
+function portPillAngle(io) {
+  const outward = portOutwardDir(io);
+  let angle = outward && outward.x !== 0 ? Math.PI / 2 : 0;
+  const offset = Number(io && io.pillRotation) || 0;
+  if (offset) angle += offset * Math.PI / 180;
+  return angle;
+}
+
+function makeConnectorAttachment(io) {
+  if (!io) return null;
+  const att = { idx:io.idx, dir:io.dir, type:io.type };
+  if (io.liftId != null) { att.liftId = io.liftId; att.liftEnd = io.liftEnd || 'destination'; }
+  else att.buildingId = io.buildingId;
+  return att;
+}
+
+function connectorAttachmentsCompatible(a, b) {
+  if (!a || !b) return true;
+  if (a.type && b.type && a.type !== b.type) return false;
+  if (a.type !== 'pipe' && a.dir && b.dir && a.dir === b.dir) return false;
+  const sameBuilding = a.buildingId != null && a.buildingId === b.buildingId;
+  const sameLift = a.liftId != null && a.liftId === b.liftId;
+  const sameLiftEnd = sameLift && (a.liftEnd || 'destination') === (b.liftEnd || 'destination');
+  if ((sameBuilding || sameLiftEnd) && a.idx === b.idx && a.dir === b.dir) return false;
+  return true;
+}
+
+function compatibleIOAtWorld(wx, wy, typeFilter, otherAttachment) {
+  const io = getIOAtWorld(wx, wy, typeFilter);
+  if (!io) return null;
+  return connectorAttachmentsCompatible(otherAttachment, makeConnectorAttachment(io)) ? io : null;
+}
+
+function sanitiseConnectorAttachments(conn) {
+  if (conn && conn.from && conn.to && !connectorAttachmentsCompatible(conn.from, conn.to)) conn.to = null;
+}
+
+function findConnectorAttachmentAtPoint(x, y, typeFilter, floor) {
+  const maxDist = Math.max(1, SCALE * 0.25);
+  let best = null, bestDist = Infinity;
+  for (const p of getFloorIOPoints(floor)) {
+    if (typeFilter && p.type !== typeFilter) continue;
+    const dx = x - p.worldX, dy = y - p.worldY;
+    const d = Math.sqrt(dx*dx + dy*dy);
+    if (d < maxDist && d < bestDist) { bestDist = d; best = p; }
+  }
+  return best ? makeConnectorAttachment(best) : null;
+}
+
+function getAttachedIO(att) {
+  if (!att) return null;
+  if (att.liftId != null) {
+    const lift = lifts.find(l => l.id === att.liftId);
+    const io = att.liftEnd === 'source' ? getLiftSourceIO(lift) : getLiftDestinationIO(lift);
+    return io && (!att.type || io.type === att.type) ? io : null;
+  }
+  const b = state.buildingIdMap.get(att.buildingId);
+  if (!b) return null;
+  const io = getBuildingIO(b);
+  const list = att.dir === 'input' ? io.inputs : io.outputs;
+  let p = list[att.idx];
+  if (p && (!att.type || p.type === att.type)) return p;
+  return list.find(candidate => !att.type || candidate.type === att.type) || null;
+}
+
+function getConnectorEndpoint(conn, key) {
+  const att = conn[key];
+  const io = getAttachedIO(att);
+  if (io) return { x:io.worldX, y:io.worldY, dir:portOutwardDir(io), attachment:att };
+  const p = key === 'from' ? conn.points[0] : conn.points[conn.points.length - 1];
+  if (!p) return null;
+  return { x:p.x, y:p.y, dir:null, attachment:null };
+}
+
+function serialiseAttachment(att) {
+  if (!att) return null;
+  const out = { idx:att.idx, dir:att.dir, type:att.type };
+  if (att.liftId != null) { out.liftId = att.liftId; out.liftEnd = att.liftEnd || 'destination'; }
+  else out.buildingId = att.buildingId;
+  return out;
+}
+
+function routeCore(a, b, obstacles, srcDir, dstDir) {
+  if (samePoint(a, b)) return [clonePoint(a)];
+
+  const candidates = [];
+
+  // Straight segment when possible.
+  if (almostEqual(a.x, b.x) || almostEqual(a.y, b.y)) candidates.push([a, b]);
+
+  // Satisfactory Straight mode: same-facing offset ports produce an S bend.
+  const sDir = normDir(srcDir), dDir = normDir(dstDir);
+  if (sDir && dDir && sDir.x === dDir.x && sDir.y === dDir.y && !samePoint(a, b)) {
+    if (sDir.y !== 0) {
+      const my = (a.y + b.y) / 2;
+      candidates.push([a, {x:a.x,y:my}, {x:b.x,y:my}, b]);
+    } else {
+      const mx = (a.x + b.x) / 2;
+      candidates.push([a, {x:mx,y:a.y}, {x:mx,y:b.y}, b]);
+    }
+  }
+
+  // Basic L-shapes remain useful, but they now compete with the graph route on
+  // both distance and clearance instead of winning merely because they are valid.
+  const hFirst = [a, {x:b.x,y:a.y}, b];
+  const vFirst = [a, {x:a.x,y:b.y}, b];
+  const preferVertical = sDir && sDir.y !== 0;
+  candidates.push(preferVertical ? vFirst : hFirst, preferVertical ? hFirst : vFirst);
+
+  const graph = findGraphRoute(a, b, obstacles, srcDir, dstDir);
+  if (graph) candidates.push(graph);
+
+  let bestPath = null;
+  let bestCost = Infinity;
+  for (const cand of candidates) {
+    const path = cleanPath(cand);
+    if (path.length < 2 || !pathClear(path, obstacles)) continue;
+    const cost = routePathCost(path, obstacles, srcDir, dstDir);
+    if (cost < bestCost - EPS || (almostEqual(cost, bestCost) && (!bestPath || path.length < bestPath.length))) {
+      bestCost = cost;
+      bestPath = path;
+    }
+  }
+
+  return bestPath || cleanPath(Math.abs(a.x - b.x) <= Math.abs(a.y - b.y) ? hFirst : vFirst);
+}
+
+function findGraphRoute(a, b, obstacles, srcDir, dstDir) {
+  const xs = [a.x, b.x, (a.x + b.x) / 2];
+  const ys = [a.y, b.y, (a.y + b.y) / 2];
+  const corridorMidlines = getCorridorMidlines(obstacles);
+  xs.push(...corridorMidlines.xs);
+  ys.push(...corridorMidlines.ys);
+
+  for (const o of obstacles) {
+    // Keep hard obstacle boundaries for compact routes, while also adding softer
+    // clearance lanes so an isolated building does not attract every turn.
+    xs.push(o.x1, o.x2, o.x1 - ROUTE_CLEARANCE_TARGET, o.x2 + ROUTE_CLEARANCE_TARGET);
+    ys.push(o.y1, o.y2, o.y1 - ROUTE_CLEARANCE_TARGET, o.y2 + ROUTE_CLEARANCE_TARGET);
+  }
+
+  // A small extra ring helps when start/end are tucked between inflated rectangles.
+  xs.push(a.x - PORT_EXIT_LEN, a.x + PORT_EXIT_LEN, b.x - PORT_EXIT_LEN, b.x + PORT_EXIT_LEN);
+  ys.push(a.y - PORT_EXIT_LEN, a.y + PORT_EXIT_LEN, b.y - PORT_EXIT_LEN, b.y + PORT_EXIT_LEN);
+
+  const ux = uniqueSorted(xs);
+  const uy = uniqueSorted(ys);
+  const xi = new Map(ux.map((v,i) => [pointKey({x:v,y:0}).split(',')[0], i]));
+  const yi = new Map(uy.map((v,i) => [pointKey({x:0,y:v}).split(',')[1], i]));
+
+  function idxOfX(v) { return xi.get(pointKey({x:v,y:0}).split(',')[0]); }
+  function idxOfY(v) { return yi.get(pointKey({x:0,y:v}).split(',')[1]); }
+  function stateKey(nodeKey, dir) { return `${nodeKey}|${dir || 'N'}`; }
+
+  const start = { x:a.x, y:a.y };
+  const goal = { x:b.x, y:b.y };
+  const startNodeKey = pointKey(start);
+  const goalNodeKey = pointKey(goal);
+  const initialAxis = axisForDir(srcDir);
+  const destinationAxis = axisForDir(dstDir);
+
+  const open = [{ node:start, nodeKey:startNodeKey, dir:initialAxis, cost:0, key:stateKey(startNodeKey, initialAxis) }];
+  const best = new Map([[open[0].key, 0]]);
+  const prev = new Map();
+  const nodes = new Map([[open[0].key, open[0]]]);
+  let foundKey = null;
+  let guard = 0;
+
+  while (open.length && guard++ < 20000) {
+    open.sort((a,b) => (a.cost + Math.abs(a.node.x - goal.x) + Math.abs(a.node.y - goal.y)) -
+                         (b.cost + Math.abs(b.node.x - goal.x) + Math.abs(b.node.y - goal.y)));
+    const cur = open.shift();
+    if (cur.nodeKey === goalNodeKey) { foundKey = cur.key; break; }
+
+    const xIndex = idxOfX(cur.node.x);
+    const yIndex = idxOfY(cur.node.y);
+    const neighbours = [];
+    if (xIndex !== undefined) {
+      if (xIndex > 0) neighbours.push({ x:ux[xIndex - 1], y:cur.node.y, dir:'H' });
+      if (xIndex < ux.length - 1) neighbours.push({ x:ux[xIndex + 1], y:cur.node.y, dir:'H' });
+    }
+    if (yIndex !== undefined) {
+      if (yIndex > 0) neighbours.push({ x:cur.node.x, y:uy[yIndex - 1], dir:'V' });
+      if (yIndex < uy.length - 1) neighbours.push({ x:cur.node.x, y:uy[yIndex + 1], dir:'V' });
+    }
+
+    for (const nb of neighbours) {
+      if (samePoint(cur.node, nb)) continue;
+      if (!segClear(cur.node.x, cur.node.y, nb.x, nb.y, obstacles)) continue;
+      const dist = Math.abs(cur.node.x - nb.x) + Math.abs(cur.node.y - nb.y);
+      const turn = cur.dir && cur.dir !== nb.dir ? ROUTE_TURN_PENALTY : 0;
+      const nodeKey = pointKey(nb);
+      const terminalTurn = nodeKey === goalNodeKey && destinationAxis && destinationAxis !== nb.dir
+        ? ROUTE_TURN_PENALTY
+        : 0;
+      const clearance = segmentClearancePenalty(cur.node.x, cur.node.y, nb.x, nb.y, obstacles);
+      const key = stateKey(nodeKey, nb.dir);
+      const cost = cur.cost + dist + turn + terminalTurn + clearance;
+      if (!best.has(key) || cost < best.get(key) - EPS) {
+        const rec = { node:{x:nb.x,y:nb.y}, nodeKey, dir:nb.dir, cost, key };
+        best.set(key, cost);
+        prev.set(key, cur.key);
+        nodes.set(key, rec);
+        open.push(rec);
+      }
+    }
+  }
+
+  if (!foundKey) return null;
+  const out = [];
+  for (let k = foundKey; k; k = prev.get(k)) out.push(nodes.get(k).node);
+  out.reverse();
+  return cleanPath(out);
+}
+
+// computePath implements Satisfactory's Straight belt build mode:
+//   • straight lines when aligned
+//   • S-bends for same-facing offset ports
+//   • 90° Manhattan routing with as many legs as needed to avoid buildings
+//   • short port exit/entry stubs so the first/last turn does not hug the I/O
+function computePath(x1, y1, x2, y2, floor, srcDir, dstDir, via) {
+  const start = { x:x1, y:y1 };
+  const end = { x:x2, y:y2 };
+  if (samePoint(start, end)) return [start];
+
+  const sDir = normDir(srcDir), dDir = normDir(dstDir);
+  const startExit = sDir ? { x:x1 + sDir.x * PORT_EXIT_LEN, y:y1 + sDir.y * PORT_EXIT_LEN } : start;
+  const endExit = dDir ? { x:x2 + dDir.x * PORT_EXIT_LEN, y:y2 + dDir.y * PORT_EXIT_LEN } : end;
+  const obs = getObstacleRects(floor, ROUTE_OBSTACLE_PADDING);
+
+  const out = [];
+  pushPoint(out, start);
+  if (sDir) pushPoint(out, startExit);
+
+  if (via) {
+    const v = { x:snapToGrid(via.x), y:snapToGrid(via.y) };
+    const first = routeCore(startExit, v, obs, sDir, null);
+    const second = routeCore(v, endExit, obs, null, dDir);
+    for (const p of first) pushPoint(out, p);
+    for (const p of second) pushPoint(out, p);
+  } else {
+    const middle = routeCore(startExit, endExit, obs, sDir, dDir);
+    for (const p of middle) pushPoint(out, p);
+  }
+
+  if (dDir) pushPoint(out, endExit);
+  pushPoint(out, end);
+  return cleanPath(out);
+}
+
+function rerouteConnector(conn) {
+  if (!conn || !conn.points || conn.points.length < 1) return;
+  sanitiseConnectorAttachments(conn);
+  const a = getConnectorEndpoint(conn, 'from');
+  const b = getConnectorEndpoint(conn, 'to');
+  if (!a || !b) return;
+  const pts = computePath(a.x, a.y, b.x, b.y, conn.floor, a.dir, b.dir, conn.via || null);
+  if (pts.length >= 2) conn.points = pts;
+}
+
+function rerouteConnectorsForBuilding(buildingId) {
+  const attachedLiftIds = new Set();
+  for (const lift of lifts) if (lift.sourceAttachment && lift.sourceAttachment.buildingId === buildingId) {
+    getLiftAnchor(lift);
+    attachedLiftIds.add(lift.id);
+  }
+  for (const arr of [belts, pipes]) {
+    for (const conn of arr) {
+      const touchesBuilding = (conn.from && conn.from.buildingId === buildingId) || (conn.to && conn.to.buildingId === buildingId);
+      const touchesLift = (conn.from && attachedLiftIds.has(conn.from.liftId)) || (conn.to && attachedLiftIds.has(conn.to.liftId));
+      if (touchesBuilding || touchesLift) rerouteConnector(conn);
+    }
+  }
+}
+
+function rerouteAllConnectors() {
+  for (const conn of belts) rerouteConnector(conn);
+  for (const conn of pipes) rerouteConnector(conn);
+}
+
+function getBeltPipeAt(wx, wy) {
+  const threshold = CONNECTOR_WIDTH_WORLD / 2 + CONNECTOR_HIT_PADDING_PX / camera.zoom;
+  for (const b of belts) {
+    if (b.floor !== state.floor) continue;
+    for (let i = 0; i < b.points.length - 1; i++) {
+      const a = b.points[i], c = b.points[i+1];
+      if (almostEqual(a.x, c.x)) {
+        const yMin = Math.min(a.y, c.y), yMax = Math.max(a.y, c.y);
+        if (Math.abs(wx - a.x) <= threshold && wy >= yMin - threshold && wy <= yMax + threshold) return b;
+      } else {
+        const xMin = Math.min(a.x, c.x), xMax = Math.max(a.x, c.x);
+        if (Math.abs(wy - a.y) <= threshold && wx >= xMin - threshold && wx <= xMax + threshold) return b;
+      }
+    }
+  }
+  for (const p of pipes) {
+    if (p.floor !== state.floor) continue;
+    for (let i = 0; i < p.points.length - 1; i++) {
+      const a = p.points[i], c = p.points[i+1];
+      if (almostEqual(a.x, c.x)) {
+        const yMin = Math.min(a.y, c.y), yMax = Math.max(a.y, c.y);
+        if (Math.abs(wx - a.x) <= threshold && wy >= yMin - threshold && wy <= yMax + threshold) return {belt:false,obj:p};
+      } else {
+        const xMin = Math.min(a.x, c.x), xMax = Math.max(a.x, c.x);
+        if (Math.abs(wy - a.y) <= threshold && wx >= xMin - threshold && wx <= xMax + threshold) return {belt:false,obj:p};
+      }
+    }
+  }
+  return null;
+}
+
+function clamp(v, min, max) { return Math.max(min, Math.min(max, v)); }
+function getConnectorPlacementTarget(wx, wy, kind) {
+  const arr = kind === 'belt' ? belts : pipes;
+  const threshold = CONNECTOR_WIDTH_WORLD / 2 + 10 / camera.zoom;
+  let best = null, bestDist = Infinity;
+  for (const conn of arr) {
+    if (conn.floor !== state.floor) continue;
+    for (let i = 0; i < conn.points.length - 1; i++) {
+      const a = conn.points[i], b = conn.points[i + 1];
+      let x, y;
+      if (almostEqual(a.x, b.x)) { x = a.x; y = clamp(wy, Math.min(a.y,b.y), Math.max(a.y,b.y)); }
+      else { x = clamp(wx, Math.min(a.x,b.x), Math.max(a.x,b.x)); y = a.y; }
+      const dist = Math.hypot(wx - x, wy - y);
+      if (dist >= threshold || dist >= bestDist) continue;
+      const outward = normDir({x:b.x-a.x,y:b.y-a.y}) || {x:0,y:1};
+      if (almostEqual(a.x,b.x)) y = clamp(snapToGrid(y), Math.min(a.y,b.y), Math.max(a.y,b.y));
+      else x = clamp(snapToGrid(x), Math.min(a.x,b.x), Math.max(a.x,b.x));
+      bestDist = dist;
+      best = { x, y, outward, dir:kind === 'belt' ? 'output' : 'input', type:kind, sourceConnector:{kind,id:conn.id} };
+    }
+  }
+  return best;
+}
+function getLiftPlacementTarget(wx, wy, kind) {
+  const io = getBuildingIOAtWorld(wx, wy, kind);
+  if (io) return { x:io.worldX, y:io.worldY, outward:portOutwardDir(io), dir:io.dir, type:kind, sourceAttachment:makeConnectorAttachment(io), pillRotation:Number(io.pillRotation)||0 };
+  const connector = getConnectorPlacementTarget(wx, wy, kind);
+  if (connector) return connector;
+  // Empty-space fallback: standalone lifts snap to the metre grid and expose
+  // connectable virtual ports on both floors.
+  return { x:snapToGrid(wx), y:snapToGrid(wy), outward:{x:0,y:1}, dir:kind === 'belt' ? 'output' : 'input', type:kind, standalone:true };
+}
+function getLiftAtWorld(wx, wy) {
+  const threshold = 1.75 * SCALE;
+  let best = null, bestDist = Infinity;
+  for (const lift of lifts) {
+    if (lift.fromFloor !== state.floor && lift.toFloor !== state.floor) continue;
+    const anchor = getLiftAnchor(lift);
+    const isDestination = lift.toFloor === state.floor;
+    const iconX = anchor.x + (isDestination ? 2.125 * SCALE : 0);
+    const iconY = anchor.y - (isDestination ? 2.125 * SCALE : 0);
+    const d = Math.min(Math.hypot(wx - anchor.x, wy - anchor.y), Math.hypot(wx - iconX, wy - iconY));
+    if (d < threshold && d < bestDist) { bestDist = d; best = lift; }
+  }
+  return best;
+}
+function detachLiftReferences(liftId) {
+  for (const arr of [belts, pipes]) for (const conn of arr) {
+    if (conn.from && conn.from.liftId === liftId) conn.from = null;
+    if (conn.to && conn.to.liftId === liftId) conn.to = null;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// BUILDING QUERIES
+// ═══════════════════════════════════════════════════════════════
+function getBuildingAt(wx, wy) {
+  for (let i = buildings.length - 1; i >= 0; i--) {
+    const b = buildings[i];
+    if (b.floor !== state.floor) continue;
+    const d = BUILDING_DATA[b.type];
+    if (!d) continue;
+    const w2 = d.w * SCALE / 2, h2 = d.h * SCALE / 2;
+    let minX = b.x - w2, maxX = b.x + w2, minY = b.y - h2, maxY = b.y + h2;
+    if (b.rotation % 180 !== 0) {
+      // rotated 90 or 270 — swap w/h
+      minX = b.x - h2; maxX = b.x + h2;
+      minY = b.y - w2; maxY = b.y + w2;
+    }
+    if (wx >= minX && wx <= maxX && wy >= minY && wy <= maxY) return b;
+  }
+  return null;
+}
+
+function cleanLabelText(value) {
+  return String(value == null ? '' : value).replace(/\s+/g, ' ').trim().slice(0, 160);
+}
+function editLabel(label) {
+  if (!label) return;
+  const text = cleanLabelText(window.prompt('Edit label text:', label.text));
+  if (text) label.text = text;
+}
+function getLabelMetrics(text) {
+  const fontSize = LABEL_FONT_WORLD * camera.zoom;
+  const paddingX = LABEL_PADDING_X_WORLD * camera.zoom;
+  const minWidth = LABEL_MIN_WIDTH_WORLD * camera.zoom;
+  const maxWidth = LABEL_MAX_WIDTH_WORLD * camera.zoom;
+
+  ctx.save();
+  ctx.font = `bold ${fontSize}px sans-serif`;
+  const textWidth = ctx.measureText(cleanLabelText(text) || 'Label').width;
+  ctx.restore();
+
+  return {
+    width: Math.min(maxWidth, Math.max(minWidth, textWidth + paddingX * 2)),
+    height: LABEL_HEIGHT_WORLD * camera.zoom,
+    fontSize,
+    paddingX
+  };
+}
+function getLabelAtScreen(sx, sy) {
+  for (let i = labels.length - 1; i >= 0; i--) {
+    const label = labels[i];
+    if (label.floor !== state.floor) continue;
+    const p = worldToScreen(label.x, label.y);
+    const m = getLabelMetrics(label.text);
+    if (sx >= p.x - m.width / 2 && sx <= p.x + m.width / 2 &&
+        sy >= p.y - m.height / 2 && sy <= p.y + m.height / 2) return label;
+  }
+  return null;
+}
+function getBuildingsInRect(x1, y1, x2, y2) {
+  const mnX = Math.min(x1,x2), mxX = Math.max(x1,x2);
+  const mnY = Math.min(y1,y2), mxY = Math.max(y1,y2);
+  return buildings.filter(b => {
+    if (b.floor !== state.floor) return false;
+    const d = BUILDING_DATA[b.type];
+    if (!d) return false;
+    const w2 = d.w * SCALE / 2, h2 = d.h * SCALE / 2;
+    let bx1 = b.x - w2, bx2 = b.x + w2, by1 = b.y - h2, by2 = b.y + h2;
+    if (b.rotation % 180 !== 0) {
+      bx1 = b.x - h2; bx2 = b.x + h2;
+      by1 = b.y - w2; by2 = b.y + w2;
+    }
+    return bx1 < mxX && bx2 > mnX && by1 < mxY && by2 > mnY;
+  });
+}
+
+function getBuildingBounds(b) {
+  const d = BUILDING_DATA[b.type];
+  if (!d) return null;
+  const w2 = d.w * SCALE / 2, h2 = d.h * SCALE / 2;
+  if (b.rotation % 180 !== 0) return { x1:b.x-h2, x2:b.x+h2, y1:b.y-w2, y2:b.y+w2 };
+  return { x1:b.x-w2, x2:b.x+w2, y1:b.y-h2, y2:b.y+h2 };
+}
+function expandBounds(bounds, rect) {
+  if (!rect) return bounds;
+  if (!bounds) return { ...rect };
+  bounds.x1 = Math.min(bounds.x1, rect.x1); bounds.y1 = Math.min(bounds.y1, rect.y1);
+  bounds.x2 = Math.max(bounds.x2, rect.x2); bounds.y2 = Math.max(bounds.y2, rect.y2);
+  return bounds;
+}
+function getConnectorBounds(conn) {
+  if (!conn || !conn.points || !conn.points.length) return null;
+  let x1 = conn.points[0].x, x2 = conn.points[0].x, y1 = conn.points[0].y, y2 = conn.points[0].y;
+  for (const pt of conn.points) { x1 = Math.min(x1, pt.x); x2 = Math.max(x2, pt.x); y1 = Math.min(y1, pt.y); y2 = Math.max(y2, pt.y); }
+  return { x1, x2, y1, y2 };
+}
+function getPlacedBounds(floor, buildingIds = null, includeConnectors = true) {
+  const ids = buildingIds ? new Set(buildingIds) : null;
+  let bounds = null;
+  for (const b of buildings) {
+    if (b.floor !== floor) continue;
+    if (ids && !ids.has(b.id)) continue;
+    bounds = expandBounds(bounds, getBuildingBounds(b));
+  }
+  if (includeConnectors && !ids) {
+    for (const conn of belts) if (conn.floor === floor) bounds = expandBounds(bounds, getConnectorBounds(conn));
+    for (const conn of pipes) if (conn.floor === floor) bounds = expandBounds(bounds, getConnectorBounds(conn));
+  }
+  return bounds;
+}
+function getFoundationBounds(floor) {
+  // Floor 0 remains the independent reference floor. Positive floors inherit
+  // upward from it; negative floors inherit downward from it.
+  let inherited = null;
+  const step = floor < 0 ? -1 : 1;
+  for (let f = 0; step > 0 ? f <= floor : f >= floor; f += step) {
+    if (!hasFloor(f)) continue;
+    const own = getPlacedBounds(f, null, true);
+    if (f === 0) inherited = own ? {...own} : null;
+    else if (own) inherited = expandBounds(inherited ? {...inherited} : null, own);
+  }
+  return inherited;
+}
+function foundationTilesForBounds(bounds) {
+  if (!bounds) return null;
+  const tileSize = 8 * SCALE;
+  const x1 = Math.floor(bounds.x1 / tileSize) * tileSize;
+  const y1 = Math.floor(bounds.y1 / tileSize) * tileSize;
+  const x2 = Math.ceil(bounds.x2 / tileSize) * tileSize;
+  const y2 = Math.ceil(bounds.y2 / tileSize) * tileSize;
+  const cols = Math.max(1, Math.round((x2 - x1) / tileSize));
+  const rows = Math.max(1, Math.round((y2 - y1) / tileSize));
+  return { x1, y1, x2, y2, cols, rows, count: cols * rows };
+}
+
+
+
+// ═══════════════════════════════════════════════════════════════
+// COST CALCULATION
+// ═══════════════════════════════════════════════════════════════
+function addCost(target, item, amount) {
+  if (!item || !amount) return;
+  target[item] = (target[item] || 0) + amount;
+}
+function addCostMap(target, source, multiplier = 1) {
+  if (!source) return;
+  for (const [item, qty] of Object.entries(source)) addCost(target, item, qty * multiplier);
+}
+function formatQty(n) {
+  return Number.isInteger(n) ? String(n) : (Math.round(n * 10) / 10).toString();
+}
+function formatCostMap(cost) {
+  const entries = Object.entries(cost || {}).filter(([,v]) => v > 0).sort((a,b) => a[0].localeCompare(b[0]));
+  return entries.length ? entries.map(([k,v]) => `${formatQty(v)} ${k}`).join(', ') : '<span class="muted">None</span>';
+}
+function connectorLengthMeters(conn) {
+  let px = 0;
+  for (let i = 0; i < conn.points.length - 1; i++) {
+    px += Math.abs(conn.points[i].x - conn.points[i+1].x) + Math.abs(conn.points[i].y - conn.points[i+1].y);
+  }
+  return px / SCALE;
+}
+function addConnectorCost(cost, conn, kind) {
+  const lenM = connectorLengthMeters(conn);
+  const units = Math.ceil(lenM / 2); // wiki: build cost is roughly 0.5 material per meter, rounded up
+  const tier = Number(conn.tier) || 1;
+  const tierData = CONNECTOR_COSTS[kind][tier] || CONNECTOR_COSTS[kind][1];
+  addCostMap(cost, tierData.perTwoMeters, units);
+  return { lenM, units };
+}
+function liftLengthMeters(lift) {
+  return Math.abs(getFloorHeight(lift.toFloor) - getFloorHeight(lift.fromFloor));
+}
+function addLiftCost(cost, lift) {
+  const lenM = liftLengthMeters(lift);
+  const units = Math.ceil(lenM / 2);
+  const tierData = CONNECTOR_COSTS[lift.kind][Number(lift.tier) || 1] || CONNECTOR_COSTS[lift.kind][1];
+  addCostMap(cost, tierData.perTwoMeters, units);
+  return {lenM, units};
+}
+function measuredConnectorLength(conn) { return conn && conn.isLift ? liftLengthMeters(conn) : connectorLengthMeters(conn); }
+function getAllUsedFloors() {
+  const floors = new Set();
+  buildings.forEach(b => floors.add(b.floor));
+  belts.forEach(b => floors.add(b.floor));
+  pipes.forEach(p => floors.add(p.floor));
+  lifts.forEach(l => { floors.add(l.fromFloor); floors.add(l.toFloor); });
+  return [...floors];
+}
+function connectorTouchesSelected(conn, selectedIds) {
+  return (conn.from && selectedIds.has(conn.from.buildingId)) ||
+         (conn.to && selectedIds.has(conn.to.buildingId));
+}
+function selectedBoundsForCost(floor, selectedIds, selectedBelts, selectedPipes) {
+  let bounds = null;
+  for (const b of buildings) {
+    if (b.floor === floor && selectedIds.has(b.id)) bounds = expandBounds(bounds, getBuildingBounds(b));
+  }
+  for (const conn of selectedBelts) if (conn.floor === floor) bounds = expandBounds(bounds, getConnectorBounds(conn));
+  for (const conn of selectedPipes) if (conn.floor === floor) bounds = expandBounds(bounds, getConnectorBounds(conn));
+  return bounds;
+}
+function calculatePlannerCost(selectionOnly = false, includeFoundations = false) {
+  const cost = {};
+  const machineRows = [];
+  const counts = new Map();
+
+  const selectedIds = new Set(selectionOnly ? state.selected : buildings.map(b => b.id));
+  const selectedBelts = [];
+  const selectedPipes = [];
+
+  for (const b of buildings) {
+    if (selectionOnly && !selectedIds.has(b.id)) continue;
+    counts.set(b.type, (counts.get(b.type) || 0) + 1);
+    addCostMap(cost, BUILD_COSTS[b.type], 1);
+  }
+  for (const [type, qty] of [...counts.entries()].sort((a,b) => BUILDING_DATA[a[0]].name.localeCompare(BUILDING_DATA[b[0]].name))) {
+    const one = BUILD_COSTS[type] || {};
+    const subtotal = {};
+    addCostMap(subtotal, one, qty);
+    machineRows.push({ type, name: BUILDING_DATA[type].name, qty, one, subtotal });
+  }
+
+  let beltLen = 0, pipeLen = 0, beltUnits = 0, pipeUnits = 0;
+  for (const b of belts) {
+    const include = !selectionOnly || b.id === selectedBeltId || connectorTouchesSelected(b, selectedIds);
+    if (!include) continue;
+    selectedBelts.push(b);
+    const r = addConnectorCost(cost, b, 'belt'); beltLen += r.lenM; beltUnits += r.units;
+  }
+  for (const p of pipes) {
+    const include = !selectionOnly || p.id === selectedPipeId || connectorTouchesSelected(p, selectedIds);
+    if (!include) continue;
+    selectedPipes.push(p);
+    const r = addConnectorCost(cost, p, 'pipe'); pipeLen += r.lenM; pipeUnits += r.units;
+  }
+  for (const lift of lifts) {
+    const touchesSelected = lift.sourceAttachment && selectedIds.has(lift.sourceAttachment.buildingId);
+    const include = !selectionOnly || lift.id === selectedLiftId || touchesSelected;
+    if (!include) continue;
+    const r = addLiftCost(cost, lift);
+    if (lift.kind === 'belt') { beltLen += r.lenM; beltUnits += r.units; }
+    else { pipeLen += r.lenM; pipeUnits += r.units; }
+  }
+
+  let foundationCount = 0;
+  if (includeFoundations) {
+    const floors = selectionOnly ? [state.floor] : getAllUsedFloors();
+    for (const floor of floors) {
+      const bounds = selectionOnly ? selectedBoundsForCost(floor, selectedIds, selectedBelts, selectedPipes) : getFoundationBounds(floor);
+      const tiles = foundationTilesForBounds(bounds);
+      if (tiles) foundationCount += tiles.count;
+    }
+    addCostMap(cost, FOUNDATION_COST, foundationCount);
+  }
+  return { cost, machineRows, beltLen, pipeLen, beltUnits, pipeUnits, foundationCount };
+}
+const costChecklistState = {
+  includeFoundations:false,
+  checked:new Set(JSON.parse(localStorage.getItem('sf2d-cost-checked') || '[]'))
+};
+function costKey(kind, id) { return `${kind}:${id}`; }
+function setCostChecked(key, checked) {
+  if (checked) costChecklistState.checked.add(key); else costChecklistState.checked.delete(key);
+  localStorage.setItem('sf2d-cost-checked', JSON.stringify([...costChecklistState.checked]));
+}
+function setIncludeFoundations(checked) {
+  costChecklistState.includeFoundations = !!checked;
+  updateCostPanel(true);
+}
+function costCheckboxRow(key, name, qty, meta = '') {
+  const checked = costChecklistState.checked.has(key) ? ' checked' : '';
+  return `<label class="cost-check-row"><input type="checkbox"${checked} onchange="setCostChecked('${key}',this.checked)"><span class="name">${name}${meta ? `<span class="breakdown-meta">${meta}</span>` : ''}</span><span class="qty">${qty}</span></label>`;
+}
+let costPanelDirty = true;
+function invalidateCostPanel() { costPanelDirty = true; }
+function updateCostPanel(force = false) {
+  const el = document.getElementById('cost-content');
+  if (!el) return;
+  if (document.getElementById('cost-panel').classList.contains('collapsed') && !force) return;
+  if (!force && !costPanelDirty) return;
+  costPanelDirty = false;
+  const sig = JSON.stringify({
+    b: buildings.map(x => [x.id,x.type,x.x,x.y,x.rotation,x.floor]),
+    belts: belts.map(x => [x.id,x.floor,x.tier,x.points, x.from, x.to, x.via]),
+    pipes: pipes.map(x => [x.id,x.floor,x.tier,x.points, x.from, x.to, x.via]),
+    lifts: lifts.map(x => [x.id,x.kind,x.x,x.y,x.fromFloor,x.toFloor,x.tier,x.portDir,x.sourceAttachment,x.sourceConnector]),
+    sel: state.selected, sb:selectedBeltId, sp:selectedPipeId, sl:selectedLiftId,
+    foundations:costChecklistState.includeFoundations
+  });
+  if (!force && sig === updateCostPanel._sig) return;
+  updateCostPanel._sig = sig;
+
+  // Foundations belong only to the overall total. The selection numerator never includes them.
+  const all = calculatePlannerCost(false, costChecklistState.includeFoundations);
+  const selected = calculatePlannerCost(true, false);
+  const hasSelection = state.selected.length > 0 || selectedBeltId !== null || selectedPipeId !== null || selectedLiftId !== null;
+  const displayQty = (selectedQty, totalQty) => hasSelection ? `${formatQty(selectedQty || 0)}/${formatQty(totalQty || 0)}` : formatQty(totalQty || 0);
+
+  const allItems = Object.keys(all.cost).sort((a,b)=>a.localeCompare(b));
+  const itemRows = allItems.length ? allItems.map(item =>
+    costCheckboxRow(costKey('item', item.replace(/[^a-z0-9]+/gi,'_')), item, displayQty(selected.cost[item], all.cost[item]))
+  ).join('') : `<div class="muted">Nothing has been placed.</div>`;
+
+  const breakdown = [];
+  const selectedIds = new Set(state.selected);
+  const machineGroups = new Map();
+  for (const b of buildings) {
+    if (!machineGroups.has(b.type)) machineGroups.set(b.type, { total:0, selected:0 });
+    const group = machineGroups.get(b.type);
+    group.total++;
+    if (selectedIds.has(b.id)) group.selected++;
+  }
+  for (const [type, group] of [...machineGroups.entries()].sort((a,b)=>BUILDING_DATA[a[0]].name.localeCompare(BUILDING_DATA[b[0]].name))) {
+    const d = BUILDING_DATA[type];
+    breakdown.push(costCheckboxRow(costKey('machine-type', type), d.name, displayQty(group.selected, group.total), formatCostMap(BUILD_COSTS[type])));
+  }
+  function addConnectorTierRows(connectors, kind, label) {
+    const groups = new Map();
+    for (const conn of connectors) {
+      const tier = Number(conn.tier) || 1;
+      if (!groups.has(tier)) groups.set(tier, { totalCount:0, selectedCount:0, totalLength:0, selectedLength:0, cost:{} });
+      const group = groups.get(tier);
+      const len = measuredConnectorLength(conn);
+      const selectedHere = conn.isLift ? (conn.id === selectedLiftId || (conn.sourceAttachment && selectedIds.has(conn.sourceAttachment.buildingId))) : ((kind === 'belt' ? conn.id === selectedBeltId : conn.id === selectedPipeId) || connectorTouchesSelected(conn, selectedIds));
+      group.totalCount++;
+      group.totalLength += len;
+      if (selectedHere) { group.selectedCount++; group.selectedLength += len; }
+      const units = Math.ceil(len / 2);
+      const tierData = CONNECTOR_COSTS[kind][tier] || CONNECTOR_COSTS[kind][1];
+      addCostMap(group.cost, tierData.perTwoMeters, units);
+    }
+    for (const [tier, group] of [...groups.entries()].sort((a,b)=>a[0]-b[0])) {
+      const tierName = connectorTierLabel(kind, tier);
+      const meta = `${displayQty(group.selectedLength, group.totalLength)}m · ${formatCostMap(group.cost)}`;
+      breakdown.push(costCheckboxRow(costKey('connector-tier', `${kind}-${tier}`), `${label} ${tierName}`, displayQty(group.selectedCount, group.totalCount), meta));
+    }
+  }
+  const beltCostObjects = belts.concat(lifts.filter(l=>l.kind==='belt').map(l=>({...l,isLift:true})));
+  const pipeCostObjects = pipes.concat(lifts.filter(l=>l.kind==='pipe').map(l=>({...l,isLift:true})));
+  if (beltCostObjects.length) addConnectorTierRows(beltCostObjects, 'belt', 'Belts & Lifts');
+  if (pipeCostObjects.length) addConnectorTierRows(pipeCostObjects, 'pipe', 'Pipes & Vertical Pipes');
+
+  const machineTotal = all.machineRows.reduce((sum,row)=>sum+row.qty,0);
+  const selectedMachineTotal = selected.machineRows.reduce((sum,row)=>sum+row.qty,0);
+  el.innerHTML = `
+    <label class="cost-top-controls"><input type="checkbox" ${costChecklistState.includeFoundations ? 'checked' : ''} onchange="setIncludeFoundations(this.checked)">&nbsp; Include foundations</label>
+    <div class="cost-summary">
+      <span>Machines</span><strong>${displayQty(selectedMachineTotal, machineTotal)}</strong>
+      <span>Belts / lifts</span><strong>${displayQty(selected.beltLen, all.beltLen)}m</strong>
+      <span>Pipes / vertical</span><strong>${displayQty(selected.pipeLen, all.pipeLen)}m</strong>
+      <span>Foundation tiles</span><strong>${formatQty(all.foundationCount)}</strong>
+    </div>
+    <details open><summary>Materials</summary>
+      <div>${itemRows}</div>
+    </details>
+    <details open><summary>Machine, belt &amp; pipe breakdown</summary>
+      <div>${breakdown.length ? breakdown.join('') : '<div class="muted">Nothing has been placed.</div>'}</div>
+    </details>
+    <div class="setting-help">When something is selected, quantities are shown as selection/total. Foundation costs are only added to the total.</div>`;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// ASSET LOADING
+// ═══════════════════════════════════════════════════════════════
+function findVisibleImageBounds(img) {
+  // Transparent PNGs often have a large empty border. A modest scan size is
+  // enough to find that border and avoids locking the UI while many assets load.
+  const naturalW = img.naturalWidth || img.width;
+  const naturalH = img.naturalHeight || img.height;
+  const full = { sx:0, sy:0, sw:naturalW, sh:naturalH };
+  if (!naturalW || !naturalH) return full;
+
+  const maxScanSize = 512;
+  const scale = Math.min(1, maxScanSize / Math.max(naturalW, naturalH));
+  const scanW = Math.max(1, Math.round(naturalW * scale));
+  const scanH = Math.max(1, Math.round(naturalH * scale));
+  const scanCanvas = document.createElement('canvas');
+  scanCanvas.width = scanW;
+  scanCanvas.height = scanH;
+  const scanCtx = scanCanvas.getContext('2d', { willReadFrequently:true });
+  if (!scanCtx) return full;
+
+  try {
+    scanCtx.clearRect(0, 0, scanW, scanH);
+    scanCtx.drawImage(img, 0, 0, scanW, scanH);
+    const pixels = scanCtx.getImageData(0, 0, scanW, scanH).data;
+    let minX = scanW, minY = scanH, maxX = -1, maxY = -1;
+    const alphaThreshold = 6;
+    for (let y = 0; y < scanH; y++) {
+      for (let x = 0; x < scanW; x++) {
+        if (pixels[(y * scanW + x) * 4 + 3] <= alphaThreshold) continue;
+        if (x < minX) minX = x;
+        if (x > maxX) maxX = x;
+        if (y < minY) minY = y;
+        if (y > maxY) maxY = y;
+      }
+    }
+    if (maxX < minX || maxY < minY) return full;
+
+    // Keep a small margin so anti-aliased edges are not clipped.
+    minX = Math.max(0, minX - 1);
+    minY = Math.max(0, minY - 1);
+    maxX = Math.min(scanW - 1, maxX + 1);
+    maxY = Math.min(scanH - 1, maxY + 1);
+    const xRatio = naturalW / scanW;
+    const yRatio = naturalH / scanH;
+    const sx = Math.max(0, Math.floor(minX * xRatio));
+    const sy = Math.max(0, Math.floor(minY * yRatio));
+    const ex = Math.min(naturalW, Math.ceil((maxX + 1) * xRatio));
+    const ey = Math.min(naturalH, Math.ceil((maxY + 1) * yRatio));
+    return { sx, sy, sw:Math.max(1, ex - sx), sh:Math.max(1, ey - sy) };
+  } catch (err) {
+    // Some file:// browser modes prohibit reading image pixels. The asset still
+    // renders; only automatic transparent-border trimming is skipped.
+    return full;
+  }
+}
+
+const ASSET_SPRITE_SCALE = 2;
+const ASSET_SPRITE_MAX_SIDE = 1600;
+const ASSET_SPRITE_MAX_PIXELS = 2000000;
+
+function makeBuildingSprite(key, img, src) {
+  const d = BUILDING_DATA[key];
+  if (!d || !img || !src || src.sw <= 0 || src.sh <= 0) return null;
+
+  let width = Math.max(1, Math.round(d.w * SCALE * ASSET_SPRITE_SCALE));
+  let height = Math.max(1, Math.round(d.h * SCALE * ASSET_SPRITE_SCALE));
+  const sideScale = Math.min(1, ASSET_SPRITE_MAX_SIDE / Math.max(width, height));
+  const pixelScale = Math.min(1, Math.sqrt(ASSET_SPRITE_MAX_PIXELS / (width * height)));
+  const safeScale = Math.min(sideScale, pixelScale);
+  width = Math.max(1, Math.round(width * safeScale));
+  height = Math.max(1, Math.round(height * safeScale));
+
+  const sprite = document.createElement('canvas');
+  sprite.width = width;
+  sprite.height = height;
+  const spriteCtx = sprite.getContext('2d');
+  if (!spriteCtx) return null;
+
+  try {
+    spriteCtx.imageSmoothingEnabled = true;
+    spriteCtx.imageSmoothingQuality = 'high';
+    spriteCtx.clearRect(0, 0, width, height);
+    spriteCtx.drawImage(img, src.sx, src.sy, src.sw, src.sh, 0, 0, width, height);
+    return sprite;
+  } catch (err) {
+    return null;
+  }
+}
+
+// Process one transparency scan per task. This keeps mouse input responsive even
+// when a whole folder of large PNG files finishes loading at the same time.
+const assetTrimQueue = [];
+let assetTrimScheduled = false;
+function queueAssetTrim(key, img) {
+  assetTrimQueue.push({ key, img });
+  if (!assetTrimScheduled) {
+    assetTrimScheduled = true;
+    setTimeout(processNextAssetTrim, 0);
+  }
+}
+function processNextAssetTrim() {
+  const job = assetTrimQueue.shift();
+  if (!job) {
+    assetTrimScheduled = false;
+    return;
+  }
+
+  const src = findVisibleImageBounds(job.img);
+  const sprite = makeBuildingSprite(job.key, job.img, src);
+  if (sprite) {
+    assetSourceRects[job.key] = src;
+    assetSprites[job.key] = sprite;
+    // Keep the original PNG available for high-zoom rendering. Normal zoom and
+    // dragging still use the bounded sprite; the original is only sampled when
+    // zoomed in enough for the 2x sprite to become visibly soft.
+    if (typeof invalidateRender === 'function') invalidateRender();
+  }
+  setTimeout(processNextAssetTrim, 0);
+}
+
+function loadAsset(key, filename, folder = 'assets') {
+  if (!filename) return;
+  const img = new Image();
+  img.onload = () => {
+    if (BUILDING_DATA[key]) {
+      const full = { sx:0, sy:0, sw:img.naturalWidth, sh:img.naturalHeight };
+      assets[key] = img;
+      assetSourceRects[key] = full;
+      // Make a bounded-size sprite immediately, then replace it with an
+      // alpha-trimmed version in the queued background pass.
+      const initialSprite = makeBuildingSprite(key, img, full);
+      if (initialSprite) assetSprites[key] = initialSprite;
+      queueAssetTrim(key, img);
+    } else {
+      // Non-building assets, such as the foundation texture, keep their original image.
+      assets[key] = img;
+    }
+    if (typeof invalidateRender === 'function') invalidateRender();
+  };
+  img.onerror = () => {
+    delete assets[key];
+    delete assetSourceRects[key];
+    delete assetSprites[key];
+    /* fallback to colored rect and label */
+  };
+  img.src = folder + '/' + filename;
+}
+function loadAllAssets() {
+  loadAsset('foundation', 'foundation.png');
+  for (const key of BUILDING_KEYS) {
+    const filename = BUILDING_DATA[key].image;
+    if (filename) loadAsset(key, filename, 'building_assets');
+  }
+}
+loadAllAssets();
+
+
+// ═══════════════════════════════════════════════════════════════
+// SIDEBAR COLLAPSE
+// ═══════════════════════════════════════════════════════════════
+function setSidebarCollapsed(collapsed, save = true) {
+  const sidebar = document.getElementById('sidebar');
+  const toggle = document.getElementById('sidebar-toggle');
+  sidebar.classList.toggle('collapsed', collapsed);
+  document.body.classList.toggle('sidebar-collapsed', collapsed);
+  toggle.textContent = collapsed ? '❮' : '❯';
+  toggle.title = collapsed ? 'Open building menu' : 'Close building menu';
+  toggle.setAttribute('aria-label', toggle.title);
+  toggle.setAttribute('aria-expanded', String(!collapsed));
+  if (save) localStorage.setItem('sf2d-sidebar-collapsed', collapsed ? '1' : '0');
+  scheduleResize();
+}
+function toggleSidebar() {
+  setSidebarCollapsed(!document.getElementById('sidebar').classList.contains('collapsed'));
+}
+setSidebarCollapsed(localStorage.getItem('sf2d-sidebar-collapsed') === '1', false);
+document.getElementById('sidebar').addEventListener('transitionend', e => {
+  if (e.propertyName === 'width' || e.propertyName === 'min-width') scheduleResize();
+});
+
+// ═══════════════════════════════════════════════════════════════
+// SETTINGS
+// ═══════════════════════════════════════════════════════════════
+function openSettings() {
+  applySettingsUI();
+  document.getElementById('settings-modal').classList.add('open');
+}
+function closeSettings() {
+  document.getElementById('settings-modal').classList.remove('open');
+}
+function applySettingsUI() {
+  const sel = document.getElementById('default-front-select');
+  if (sel) sel.value = settings.defaultFront;
+}
+function setDefaultFront(value) {
+  settings.defaultFront = value === 'up' ? 'up' : 'down';
+  localStorage.setItem('sf2d-default-front', settings.defaultFront);
+  if (state.tool && BUILDING_DATA[state.tool]) state.rotation = defaultRotation();
+}
+function toggleCostPanel() {
+  document.getElementById('cost-panel').classList.toggle('collapsed');
+  updateCostPanel(true);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// TOOL / MENU MANAGEMENT
+// ═══════════════════════════════════════════════════════════════
+function connectorTierLabel(kind, tier) {
+  const data = CONNECTOR_TIERS[kind] && CONNECTOR_TIERS[kind][Number(tier) || 1];
+  return data ? data.label : 'Mk.1';
+}
+function setConnectorTier(kind, value) {
+  state.connectorTier[kind] = Math.max(1, Number(value) || 1);
+  updateToolLabel();
+}
+function toggleLiftDirection(kind) {
+  state.liftDirection[kind] = state.liftDirection[kind] === 'up' ? 'down' : 'up';
+  const btn = document.querySelector(`[data-lift-direction="${kind}"]`);
+  if (btn) btn.textContent = state.liftDirection[kind] === 'up' ? '↑ Up' : '↓ Down';
+  updateToolLabel();
+}
+function updateToolLabel() {
+  const label = document.getElementById('tool-label');
+  if (state.tool === 'conveyor_belt') label.textContent = `🔧 Conveyor Belt ${connectorTierLabel('belt', state.connectorTier.belt)} Tool`;
+  else if (state.tool === 'pipeline') label.textContent = `🔧 Pipeline ${connectorTierLabel('pipe', state.connectorTier.pipe)} Tool`;
+  else if (state.tool === 'conveyor_lift') label.textContent = `↕ Conveyor Lift ${connectorTierLabel('belt', state.connectorTier.belt)} · ${state.liftDirection.belt}`;
+  else if (state.tool === 'vertical_pipe') label.textContent = `↕ Vertical Pipe ${connectorTierLabel('pipe', state.connectorTier.pipe)} · ${state.liftDirection.pipe}`;
+}
+function beginConnectorFromPort(pt) {
+  if (!pt) return false;
+  const tool = pt.type === 'belt' ? 'conveyor_belt' : 'pipeline';
+  selectTool(tool);
+  drawSource = { x:pt.worldX, y:pt.worldY, dir:portOutwardDir(pt), attachment:makeConnectorAttachment(pt) };
+  drawType = pt.type;
+  drawSnapTarget = pt;
+  return true;
+}
+
+function selectTool(tool) {
+  // Clean up active drawing
+  drawSource = null;
+  drawType = null;
+  drawSnapTarget = null;
+
+  pastePreview = null;
+  state.tool = tool;
+  state.rotation = defaultRotation();
+  state.selected = [];
+  selectedLabelId = null;
+  selectedLiftId = null;
+
+  document.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+  const label = document.getElementById('tool-label');
+  if (tool === null) {
+    document.querySelector('[data-type="select"]').classList.add('active');
+    label.textContent = '🔍 Selection / Edit';
+  } else if (tool === 'label_box') {
+    document.querySelector('[data-type="label_box"]').classList.add('active');
+    label.textContent = '🏷️ Label Box — click to add text';
+  } else if (tool === 'conveyor_belt') {
+    document.querySelector('[data-type="conveyor_belt"]').classList.add('active');
+    updateToolLabel();
+  } else if (tool === 'pipeline') {
+    document.querySelector('[data-type="pipeline"]').classList.add('active');
+    updateToolLabel();
+  } else if (tool === 'conveyor_lift' || tool === 'vertical_pipe') {
+    const btn = document.querySelector(`[data-type="${tool}"]`);
+    if (btn) btn.classList.add('active');
+    updateToolLabel();
+  } else if (BUILDING_DATA[tool]) {
+    document.querySelector(`[data-type="${tool}"]`).classList.add('active');
+    label.textContent = '🏗️ ' + BUILDING_DATA[tool].name;
+  }
+  updateCanvasCursor();
+}
+
+function buildMenu() {
+  const menu = document.getElementById('menu');
+  let html = '';
+
+  // Planner-only tools remain above the in-game build-menu categories.
+  html += `<button class="btn active" data-type="select" onclick="selectTool(null)"><span class="color-dot" style="background:#888"></span> Select / Edit<span class="key-hint">Esc</span></button>`;
+  html += `<button class="btn" data-type="label_box" onclick="selectTool('label_box')"><span class="color-dot" style="background:#f5a623"></span> Label Box<span class="key-hint">L</span></button>`;
+  // Conveyor & Pipe tools
+  html += `<div class="tool-row"><button class="btn" data-type="conveyor_belt" onclick="selectTool('conveyor_belt')"><span class="color-dot" style="background:#c8c8c8"></span> Conveyor Belt<span class="key-hint">B</span></button><select class="tool-tier-select" aria-label="Conveyor belt tier" onchange="setConnectorTier('belt',this.value)">${Object.keys(CONNECTOR_TIERS.belt).map(t=>`<option value="${t}" ${Number(t)===state.connectorTier.belt?'selected':''}>Mk.${t}</option>`).join('')}</select></div>`;
+  html += `<div class="tool-row lift-tool-row"><button class="btn" data-type="conveyor_lift" onclick="selectTool('conveyor_lift')"><span class="color-dot" style="background:#c8c8c8"></span> Conveyor Lift</button><button class="lift-direction-btn" data-lift-direction="belt" onclick="toggleLiftDirection('belt')">${state.liftDirection.belt==='up'?'↑ Up':'↓ Down'}</button><select class="tool-tier-select" aria-label="Conveyor lift tier" onchange="setConnectorTier('belt',this.value)">${Object.keys(CONNECTOR_TIERS.belt).map(t=>`<option value="${t}" ${Number(t)===state.connectorTier.belt?'selected':''}>Mk.${t}</option>`).join('')}</select></div>`;
+  html += `<div class="tool-row"><button class="btn" data-type="pipeline" onclick="selectTool('pipeline')"><span class="color-dot" style="background:#3498db"></span> Pipeline<span class="key-hint">P</span></button><select class="tool-tier-select" aria-label="Pipeline tier" onchange="setConnectorTier('pipe',this.value)">${Object.keys(CONNECTOR_TIERS.pipe).map(t=>`<option value="${t}" ${Number(t)===state.connectorTier.pipe?'selected':''}>Mk.${t}</option>`).join('')}</select></div>`;
+  html += `<div class="tool-row lift-tool-row"><button class="btn" data-type="vertical_pipe" onclick="selectTool('vertical_pipe')"><span class="color-dot" style="background:#FA9549"></span> Vertical Pipe</button><button class="lift-direction-btn" data-lift-direction="pipe" onclick="toggleLiftDirection('pipe')">${state.liftDirection.pipe==='up'?'↑ Up':'↓ Down'}</button><select class="tool-tier-select" aria-label="Vertical pipe tier" onchange="setConnectorTier('pipe',this.value)">${Object.keys(CONNECTOR_TIERS.pipe).map(t=>`<option value="${t}" ${Number(t)===state.connectorTier.pipe?'selected':''}>Mk.${t}</option>`).join('')}</select></div>`;
+  const byGroup = {};
+  for (const key of BUILDING_KEYS) {
+    const d = BUILDING_DATA[key];
+    if (!byGroup[d.category]) byGroup[d.category] = [];
+    byGroup[d.category].push(key);
+  }
+
+  function orderedGroupKeys(groupKey) {
+    const keys = (byGroup[groupKey] || []).slice();
+    const preferred = MENU_ITEM_ORDER[groupKey] || [];
+    const rank = new Map(preferred.map((key, index) => [key, index]));
+    return keys.sort((a, b) => {
+      const ar = rank.has(a) ? rank.get(a) : Number.MAX_SAFE_INTEGER;
+      const br = rank.has(b) ? rank.get(b) : Number.MAX_SAFE_INTEGER;
+      return ar - br || BUILDING_KEYS.indexOf(a) - BUILDING_KEYS.indexOf(b);
+    });
+  }
+
+  for (const section of MENU_STRUCTURE) {
+    html += `<div class="cat-label">${section.label}</div>`;
+    for (const group of section.groups) {
+      const keys = orderedGroupKeys(group.key);
+      const tools = group.tools || [];
+      if (!keys.length && !tools.length) continue;
+      if (group.label) html += `<div class="subcat-label">${group.label}</div>`;
+
+      for (const tool of tools) {
+        const d = MENU_TOOL_DATA[tool];
+        if (!d) continue;
+        html += `<button class="btn" data-type="${tool}" onclick="selectTool('${tool}')"><span class="color-dot" style="background:${d.color}"></span> ${d.name}<span class="key-hint">${d.hint}</span></button>`;
+      }
+      for (const key of keys) {
+        const d = BUILDING_DATA[key];
+        html += `<button class="btn" data-type="${key}" onclick="selectTool('${key}')"><span class="color-dot" style="background:${d.color}"></span> ${d.name}</button>`;
+      }
+    }
+  }
+
+  menu.innerHTML = html;
+}
+buildMenu();
+
+// ═══════════════════════════════════════════════════════════════
+// FLOOR MANAGEMENT
+// ═══════════════════════════════════════════════════════════════
+function normaliseFloorMap(raw) {
+  const out = Object.create(null);
+  if (Array.isArray(raw)) {
+    raw.forEach((height, floor) => {
+      const value = Number(height);
+      if (Number.isFinite(value)) out[floor] = value;
+    });
+  } else if (raw && typeof raw === 'object') {
+    for (const [key, height] of Object.entries(raw)) {
+      const floor = Number(key), value = Number(height);
+      if (Number.isInteger(floor) && Number.isFinite(value)) out[floor] = value;
+    }
+  }
+  if (!Object.prototype.hasOwnProperty.call(out, '0')) out[0] = 0;
+  return out;
+}
+function getFloorNumbers() {
+  return Object.keys(state.floors).map(Number).filter(Number.isInteger).sort((a,b) => a-b);
+}
+function hasFloor(floor) {
+  return Object.prototype.hasOwnProperty.call(state.floors, String(floor));
+}
+function getFloorHeight(floor) {
+  return hasFloor(floor) ? Number(state.floors[floor]) || 0 : floor * FLOOR_HEIGHT;
+}
+function tallestBuildingHeightOnFloor(floor) {
+  let maxZ = 0;
+  for (const b of buildings) if (b.floor === floor) {
+    const d = BUILDING_DATA[b.type];
+    if (d && d.z > maxZ) maxZ = d.z;
+  }
+  return maxZ;
+}
+function setCurrentFloor(floor) {
+  if (!hasFloor(floor)) return false;
+  state.floor = floor;
+  state.selected = [];
+  selectedLabelId = null;
+  selectedLiftId = null;
+  drawSource = null;
+  updateFloorSelect();
+  return true;
+}
+function addFloor(direction = 'up') {
+  const floors = getFloorNumbers();
+  const upward = direction !== 'down';
+  const edgeFloor = upward ? floors[floors.length - 1] : floors[0];
+  const newFloor = edgeFloor + (upward ? 1 : -1);
+  const spacing = Math.max(FLOOR_HEIGHT, Math.ceil(tallestBuildingHeightOnFloor(edgeFloor) / 4) * 4);
+  state.floors[newFloor] = getFloorHeight(edgeFloor) + (upward ? spacing : -spacing);
+  setCurrentFloor(newFloor);
+  return newFloor;
+}
+function moveFloor(direction = 'up') {
+  const floors = getFloorNumbers();
+  const upward = direction !== 'down';
+  const currentIndex = floors.indexOf(state.floor);
+  if (currentIndex >= 0) {
+    const nextIndex = currentIndex + (upward ? 1 : -1);
+    if (nextIndex >= 0 && nextIndex < floors.length) {
+      setCurrentFloor(floors[nextIndex]);
+      return;
+    }
+  }
+  addFloor(direction);
+}
+function updateFloorSelect() {
+  const sel = document.getElementById('floor-select');
+  sel.innerHTML = '';
+  const floors = getFloorNumbers();
+  for (const floor of floors) {
+    const opt = document.createElement('option');
+    opt.value = floor;
+    opt.textContent = `Floor ${floor} (${formatQty(getFloorHeight(floor))}m)`;
+    sel.appendChild(opt);
+  }
+  if (!hasFloor(state.floor)) state.floor = hasFloor(0) ? 0 : floors[0];
+  sel.value = state.floor;
+  document.getElementById('floor-display').textContent = state.floor;
+}
+document.getElementById('floor-select').addEventListener('change', e => {
+  state.floor = parseInt(e.target.value);
+  state.selected = [];
+  selectedLabelId = null;
+  selectedLiftId = null;
+  document.getElementById('floor-display').textContent = state.floor;
+  drawSource = null;
+});
+document.getElementById('add-floor-above-btn').addEventListener('click', () => moveFloor('up'));
+document.getElementById('add-floor-below-btn').addEventListener('click', () => moveFloor('down'));
+
+// ═══════════════════════════════════════════════════════════════
+// BATCH PLACEMENT (row-based GUI)
+// ═══════════════════════════════════════════════════════════════
+let importEntries = [];
+
+function openImport() {
+  importEntries = [{ key: 'constructor', qty: 1 }];
+  renderImportRows();
+  document.getElementById('import-modal').classList.add('open');
+}
+function closeImport() {
+  document.getElementById('import-modal').classList.remove('open');
+}
+
+function renderImportRows() {
+  const container = document.getElementById('import-rows');
+  const keys = Object.keys(BUILDING_DATA);
+  container.innerHTML = importEntries.map((entry, idx) => {
+    const opts = keys.map(k => `<option value="${k}"${k===entry.key?' selected':''}>${BUILDING_DATA[k].name}</option>`).join('');
+    return `<div class="batch-row">
+      <select onchange="importEntries[${idx}].key=this.value">${opts}</select>
+      <input type="number" value="${entry.qty||1}" min="1" max="999" onchange="importEntries[${idx}].qty=Math.max(1,parseInt(this.value)||1)">
+      <button class="rm-row" onclick="importEntries.splice(${idx},1);renderImportRows()">×</button>
+    </div>`;
+  }).join('');
+}
+
+function addImportRow() {
+  importEntries.push({ key: 'constructor', qty: 1 });
+  renderImportRows();
+}
+
+function buildBatchPlacementItems() {
+  const items = [];
+  let rowTop = 0;
+  const rotation = defaultRotation();
+
+  // Each import entry gets its own row. Repeated buildings are placed side by side
+  // with the smallest possible gap that still puts the next snapped side on a 1m line.
+  for (const entry of importEntries) {
+    const d = BUILDING_DATA[entry.key];
+    if (!d) continue;
+    const qty = Math.max(1, parseInt(entry.qty, 10) || 1);
+    const size = orientedBuildingSize(entry.key, rotation);
+    let left = 0;
+    let rowBottom = rowTop;
+
+    for (let i = 0; i < qty; i++) {
+      if (i > 0) left = Math.ceil((left - EPS) / SCALE) * SCALE;
+      items.push({ type:entry.key, x:left + size.w / 2, y:rowTop + size.h / 2, rotation });
+      left += size.w;
+      rowBottom = Math.max(rowBottom, rowTop + size.h);
+    }
+    rowTop = Math.ceil((rowBottom - EPS) / SCALE) * SCALE;
+  }
+  return items;
+}
+
+function startBatchPlacement() {
+  const items = buildBatchPlacementItems();
+  if (!items.length) return;
+  closeImport();
+  beginPlacementPreview(items, {
+    repeat:true,
+    kind:'batch',
+    anchor:'bottom-left',
+    message:`📦 Batch place ${items.length} building${items.length === 1 ? '' : 's'} — cursor anchors bottom-left, click to place, R rotates, Esc stops`
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════
+// LOCAL PLAN AUTOSAVE
+// ═══════════════════════════════════════════════════════════════
+
+const LOCAL_PLAN_KEY = 'sf2d-current-plan';
+let localSaveTimer = 0;
+let localPlanLoading = false;
+
+/**
+ * Creates the same kind of data object used by file export,
+ * but stores it in the browser instead.
+ */
+function createPlanData() {
+  return {
+    version: 6,
+
+    buildings: buildings.map(b => ({
+      id: b.id,
+      type: b.type,
+      x: b.x,
+      y: b.y,
+      rotation: b.rotation,
+      floor: b.floor
+    })),
+
+    belts: belts.map(b => ({
+      id: b.id,
+      points: b.points.map(p => ({
+        x: p.x,
+        y: p.y
+      })),
+      floor: b.floor,
+      tier: b.tier || 1,
+      from: serialiseAttachment(b.from),
+      to: serialiseAttachment(b.to),
+      via: b.via
+        ? { x: b.via.x, y: b.via.y }
+        : null
+    })),
+
+    pipes: pipes.map(p => ({
+      id: p.id,
+      points: p.points.map(point => ({
+        x: point.x,
+        y: point.y
+      })),
+      floor: p.floor,
+      tier: p.tier || 1,
+      from: serialiseAttachment(p.from),
+      to: serialiseAttachment(p.to),
+      via: p.via
+        ? { x: p.via.x, y: p.via.y }
+        : null
+    })),
+
+    lifts: lifts.map(l => ({
+      id: l.id,
+      kind: l.kind,
+      x: l.x,
+      y: l.y,
+      fromFloor: l.fromFloor,
+      toFloor: l.toFloor,
+      direction: l.direction,
+      tier: l.tier,
+      portDir: l.portDir,
+      outward: l.outward,
+      pillRotation: l.pillRotation || 0,
+      sourceAttachment: serialiseAttachment(l.sourceAttachment),
+      sourceConnector: l.sourceConnector || null
+    })),
+
+    labels: labels.map(l => ({
+      id: l.id,
+      text: l.text,
+      x: l.x,
+      y: l.y,
+      floor: l.floor
+    })),
+
+    floors: { ...state.floors },
+    currentFloor: state.floor,
+
+    nextId: state.nextId,
+    nextBeltId,
+    nextLiftId,
+    nextLabelId,
+
+    settings: {
+      ...settings,
+      connectorTier: { ...state.connectorTier },
+      liftDirection: { ...state.liftDirection }
+    }
+  };
+}
+
+/**
+ * Immediately writes the current plan into localStorage.
+ */
+function savePlanLocally() {
+  if (localPlanLoading) return;
+
+  try {
+    const data = createPlanData();
+    localStorage.setItem(LOCAL_PLAN_KEY, JSON.stringify(data));
+  } catch (error) {
+    console.error('Failed to save the current plan locally:', error);
+  }
+}
+
+/**
+ * Delays saves slightly so dragging a building does not write
+ * to localStorage hundreds of times per second.
+ */
+function scheduleLocalPlanSave() {
+  if (localPlanLoading) return;
+
+  clearTimeout(localSaveTimer);
+
+  localSaveTimer = setTimeout(() => {
+    localSaveTimer = 0;
+    savePlanLocally();
+  }, 300);
+}
+
+function restorePlanData(data) {
+  if (!data || !data.version) {
+    throw new Error('Invalid saved plan');
+  }
+
+  localPlanLoading = true;
+
+  try {
+    // Clear the current runtime state.
+    buildings.length = 0;
+    belts.length = 0;
+    pipes.length = 0;
+    lifts.length = 0;
+    labels.length = 0;
+
+    state.buildingIdMap.clear();
+    state.selected = [];
+
+    selectedBeltId = null;
+    selectedPipeId = null;
+    selectedLiftId = null;
+    selectedLabelId = null;
+    editingEndpoint = null;
+    pastePreview = null;
+    drawSource = null;
+    drawType = null;
+    drawSnapTarget = null;
+
+    // Restore floors and ID counters.
+    state.floors = normaliseFloorMap(data.floors);
+    state.floor = Number.isFinite(Number(data.currentFloor))
+      ? Number(data.currentFloor)
+      : 0;
+
+    state.nextId = Math.max(1, Number(data.nextId) || 1);
+    nextBeltId = Math.max(1, Number(data.nextBeltId) || 1);
+    nextLiftId = Math.max(1, Number(data.nextLiftId) || 1);
+    nextLabelId = Math.max(1, Number(data.nextLabelId) || 1);
+
+    // Restore settings.
+    if (data.settings) {
+      if (data.settings.defaultFront) {
+        settings.defaultFront =
+          data.settings.defaultFront === 'up' ? 'up' : 'down';
+
+        localStorage.setItem(
+          'sf2d-default-front',
+          settings.defaultFront
+        );
+      }
+
+      if (data.settings.connectorTier) {
+        state.connectorTier.belt = Math.min(
+          6,
+          Math.max(
+            1,
+            Number(data.settings.connectorTier.belt) || 1
+          )
+        );
+
+        state.connectorTier.pipe = Math.min(
+          2,
+          Math.max(
+            1,
+            Number(data.settings.connectorTier.pipe) || 1
+          )
+        );
+      }
+
+      if (data.settings.liftDirection) {
+        state.liftDirection.belt =
+          data.settings.liftDirection.belt === 'down'
+            ? 'down'
+            : 'up';
+
+        state.liftDirection.pipe =
+          data.settings.liftDirection.pipe === 'down'
+            ? 'down'
+            : 'up';
+      }
+    }
+
+    // Restore buildings.
+    for (const savedBuilding of data.buildings || []) {
+      if (!BUILDING_DATA[savedBuilding.type]) continue;
+
+      const building = {
+        id: Number(savedBuilding.id) || state.nextId++,
+        type: savedBuilding.type,
+        x: Number(savedBuilding.x) || 0,
+        y: Number(savedBuilding.y) || 0,
+        rotation: Number(savedBuilding.rotation) || 0,
+        floor: Number(savedBuilding.floor) || 0
+      };
+
+      buildings.push(building);
+      state.buildingIdMap.set(building.id, building);
+    }
+
+    // Ensure future buildings receive unused IDs.
+    state.nextId = Math.max(
+      state.nextId,
+      buildings.reduce(
+        (highest, building) =>
+          Math.max(highest, building.id + 1),
+        1
+      )
+    );
+
+    // Restore labels.
+    for (const savedLabel of data.labels || []) {
+      const text = cleanLabelText(savedLabel.text);
+      if (!text) continue;
+
+      labels.push({
+        id: Number(savedLabel.id) || nextLabelId++,
+        text,
+        x: Number(savedLabel.x) || 0,
+        y: Number(savedLabel.y) || 0,
+        floor: Number(savedLabel.floor) || 0
+      });
+    }
+
+    nextLabelId = Math.max(
+      nextLabelId,
+      labels.reduce(
+        (highest, label) => Math.max(highest, label.id + 1),
+        1
+      )
+    );
+
+    // Restore conveyor belts.
+    for (const savedBelt of data.belts || []) {
+      if (!Array.isArray(savedBelt.points)) continue;
+      if (savedBelt.points.length < 2) continue;
+
+      const belt = {
+        id: Number(savedBelt.id) || nextBeltId++,
+
+        points: savedBelt.points.map(point => ({
+          x: Number(point.x) || 0,
+          y: Number(point.y) || 0
+        })),
+
+        floor: Number(savedBelt.floor) || 0,
+
+        tier: Math.min(
+          6,
+          Math.max(1, Number(savedBelt.tier) || 1)
+        ),
+
+        from: savedBelt.from || null,
+        to: savedBelt.to || null,
+
+        via: savedBelt.via
+          ? {
+              x: Number(savedBelt.via.x) || 0,
+              y: Number(savedBelt.via.y) || 0
+            }
+          : null
+      };
+
+      belts.push(belt);
+    }
+
+    // Restore pipelines.
+    for (const savedPipe of data.pipes || []) {
+      if (!Array.isArray(savedPipe.points)) continue;
+      if (savedPipe.points.length < 2) continue;
+
+      const pipe = {
+        id: Number(savedPipe.id) || nextBeltId++,
+
+        points: savedPipe.points.map(point => ({
+          x: Number(point.x) || 0,
+          y: Number(point.y) || 0
+        })),
+
+        floor: Number(savedPipe.floor) || 0,
+
+        tier: Math.min(
+          2,
+          Math.max(1, Number(savedPipe.tier) || 1)
+        ),
+
+        from: savedPipe.from || null,
+        to: savedPipe.to || null,
+
+        via: savedPipe.via
+          ? {
+              x: Number(savedPipe.via.x) || 0,
+              y: Number(savedPipe.via.y) || 0
+            }
+          : null
+      };
+
+      pipes.push(pipe);
+    }
+
+    // Restore lifts.
+    for (const savedLift of data.lifts || []) {
+      const kind =
+        savedLift.kind === 'pipe' ? 'pipe' : 'belt';
+
+      lifts.push({
+        id: Number(savedLift.id) || nextLiftId++,
+        kind,
+
+        x: Number(savedLift.x) || 0,
+        y: Number(savedLift.y) || 0,
+
+        fromFloor: Number(savedLift.fromFloor) || 0,
+        toFloor: Number(savedLift.toFloor) || 0,
+
+        direction:
+          savedLift.direction === 'down' ? 'down' : 'up',
+
+        tier: Math.max(1, Number(savedLift.tier) || 1),
+
+        portDir:
+          savedLift.portDir ||
+          (kind === 'belt' ? 'output' : 'input'),
+
+        outward:
+          normDir(savedLift.outward) || { x: 0, y: 1 },
+
+        pillRotation:
+          Number(savedLift.pillRotation) || 0,
+
+        sourceAttachment:
+          savedLift.sourceAttachment || null,
+
+        sourceConnector:
+          savedLift.sourceConnector || null
+      });
+    }
+
+    nextBeltId = Math.max(
+      nextBeltId,
+      belts.reduce(
+        (highest, connector) =>
+          Math.max(highest, connector.id + 1),
+        1
+      ),
+      pipes.reduce(
+        (highest, connector) =>
+          Math.max(highest, connector.id + 1),
+        1
+      )
+    );
+
+    nextLiftId = Math.max(
+      nextLiftId,
+      lifts.reduce(
+        (highest, lift) => Math.max(highest, lift.id + 1),
+        1
+      )
+    );
+
+    rerouteAllConnectors();
+    buildMenu();
+    updateFloorSelect();
+    applySettingsUI();
+    invalidateCostPanel();
+    invalidateRender();
+  } finally {
+    localPlanLoading = false;
+  }
+}
+
+function loadPlanLocally() {
+  const savedJSON = localStorage.getItem(LOCAL_PLAN_KEY);
+  if (!savedJSON) return false;
+
+  try {
+    const data = JSON.parse(savedJSON);
+    restorePlanData(data);
+    return true;
+  } catch (error) {
+    console.error('Failed to restore the locally saved plan:', error);
+
+    // Remove malformed data so it does not fail every reload.
+    localStorage.removeItem(LOCAL_PLAN_KEY);
+    return false;
+  }
+}
+
+function clearWholeGrid() {
+  const hasContent =
+    buildings.length > 0 ||
+    belts.length > 0 ||
+    pipes.length > 0 ||
+    lifts.length > 0 ||
+    labels.length > 0 ||
+    Object.keys(state.floors).length > 1;
+
+  if (!hasContent) {
+    alert('The grid is already empty.');
+    return;
+  }
+
+  const confirmed = window.confirm(
+    'Clear the whole grid?\n\n' +
+    'This will remove every building, belt, pipeline, lift, label, and floor. ' +
+    'This action cannot be undone.'
+  );
+
+  if (!confirmed) return;
+
+  buildings.length = 0;
+  belts.length = 0;
+  pipes.length = 0;
+  lifts.length = 0;
+  labels.length = 0;
+
+  state.buildingIdMap.clear();
+  state.selected = [];
+
+  selectedBeltId = null;
+  selectedPipeId = null;
+  selectedLiftId = null;
+  selectedLabelId = null;
+  editingEndpoint = null;
+
+  copiedBuildings = [];
+  pastePreview = null;
+
+  drawSource = null;
+  drawType = null;
+  drawSnapTarget = null;
+
+  // Reset to one reference floor.
+  state.floors = { '0': 0 };
+  state.floor = 0;
+
+  // Reset IDs.
+  state.nextId = 1;
+  nextBeltId = 1;
+  nextLiftId = 1;
+  nextLabelId = 1;
+
+  updateFloorSelect();
+  closeSettings();
+
+  invalidateCostPanel();
+  invalidateRender();
+
+  // Save the now-empty plan so the old layout does not return.
+  savePlanLocally();
+}
+
+// ═══════════════════════════════════════════════════════════════
+// FILE EXPORT / IMPORT
+// ═══════════════════════════════════════════════════════════════
+function exportPlan() {
+  const enteredName = window.prompt('Save plan as:', 'factory-plan');
+  if (enteredName === null) return;
+  const cleanBaseName = enteredName
+    .trim()
+    .replace(/\.sfactory$/i, '')
+    .replace(/[<>:\"/\\|?*\x00-\x1F]/g, '_')
+    .replace(/[. ]+$/g, '') || 'factory-plan';
+
+  const data = createPlanData();
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `${cleanBaseName}.sfactory`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+function importPlan(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (!data.version) { alert('Invalid plan file'); return; }
+      // Clear existing
+      buildings.length = 0;
+      belts.length = 0;
+      pipes.length = 0;
+      lifts.length = 0;
+      labels.length = 0;
+      state.buildingIdMap.clear();
+      state.selected = [];
+      selectedBeltId = null;
+      selectedPipeId = null;
+      selectedLiftId = null;
+      editingEndpoint = null;
+      selectedLabelId = null;
+      pastePreview = null;
+      // Restore
+      state.floors = normaliseFloorMap(data.floors);
+      state.floor = data.currentFloor || 0;
+      state.nextId = data.nextId || 1;
+      nextBeltId = data.nextBeltId || 1;
+      nextLiftId = data.nextLiftId || 1;
+      nextLabelId = data.nextLabelId || 1;
+      if (data.settings && data.settings.defaultFront) {
+        settings.defaultFront = data.settings.defaultFront === 'up' ? 'up' : 'down';
+        localStorage.setItem('sf2d-default-front', settings.defaultFront);
+      }
+      if (data.settings && data.settings.liftDirection) {
+        state.liftDirection.belt = data.settings.liftDirection.belt === 'down' ? 'down' : 'up';
+        state.liftDirection.pipe = data.settings.liftDirection.pipe === 'down' ? 'down' : 'up';
+      }
+      if (data.settings && data.settings.connectorTier) {
+        state.connectorTier.belt = Math.min(6, Math.max(1, Number(data.settings.connectorTier.belt) || 1));
+        state.connectorTier.pipe = Math.min(2, Math.max(1, Number(data.settings.connectorTier.pipe) || 1));
+        buildMenu();
+      }
+      for (const bd of (data.buildings || [])) {
+        const b = { id:bd.id, type:bd.type, x:bd.x, y:bd.y, rotation:bd.rotation||0, floor:bd.floor||0 };
+        buildings.push(b);
+        state.buildingIdMap.set(b.id, b);
+      }
+      for (const ld of (data.labels || [])) {
+        const text = cleanLabelText(ld.text);
+        if (!text) continue;
+        labels.push({ id:ld.id || nextLabelId++, text, x:Number(ld.x)||0, y:Number(ld.y)||0, floor:ld.floor||0 });
+      }
+      nextLabelId = Math.max(nextLabelId, labels.reduce((m,l) => Math.max(m, l.id + 1), 1));
+      for (const bd of (data.belts || [])) {
+        let conn;
+        if (bd.points) {
+          const pts = bd.points.map(p=>({x:p.x,y:p.y}));
+          const floor = bd.floor||0;
+          conn = {
+            id:bd.id||nextBeltId++,
+            points:pts,
+            floor:floor,
+            tier:Math.min(6, Math.max(1, Number(bd.tier) || 1)),
+            from:bd.from || findConnectorAttachmentAtPoint(pts[0].x, pts[0].y, 'belt', floor),
+            to:bd.to || findConnectorAttachmentAtPoint(pts[pts.length - 1].x, pts[pts.length - 1].y, 'belt', floor),
+            via:bd.via || null
+          };
+        } else {
+          // v1 compat: convert x1,y1,x2,y2 to a routed path
+          const pts = computePath(bd.x1, bd.y1, bd.x2, bd.y2, bd.floor||0);
+          conn = { id:bd.id||nextBeltId++, points:pts, floor:bd.floor||0, tier:1, from:null, to:null, via:null };
+        }
+        belts.push(conn);
+        if (conn.from || conn.to || conn.via) rerouteConnector(conn);
+      }
+      for (const pd of (data.pipes || [])) {
+        let conn;
+        if (pd.points) {
+          const pts = pd.points.map(p=>({x:p.x,y:p.y}));
+          const floor = pd.floor||0;
+          conn = {
+            id:pd.id||nextBeltId++,
+            points:pts,
+            floor:floor,
+            tier:Math.min(2, Math.max(1, Number(pd.tier) || 1)),
+            from:pd.from || findConnectorAttachmentAtPoint(pts[0].x, pts[0].y, 'pipe', floor),
+            to:pd.to || findConnectorAttachmentAtPoint(pts[pts.length - 1].x, pts[pts.length - 1].y, 'pipe', floor),
+            via:pd.via || null
+          };
+        } else {
+          const pts = computePath(pd.x1, pd.y1, pd.x2, pd.y2, pd.floor||0);
+          conn = { id:pd.id||nextBeltId++, points:pts, floor:pd.floor||0, tier:1, from:null, to:null, via:null };
+        }
+        pipes.push(conn);
+        if (conn.from || conn.to || conn.via) rerouteConnector(conn);
+      }
+      for (const ld of (data.lifts || [])) {
+        const kind = ld.kind === 'pipe' ? 'pipe' : 'belt';
+        const lift = {
+          id:ld.id || nextLiftId++, kind, x:Number(ld.x)||0, y:Number(ld.y)||0,
+          fromFloor:Number.isFinite(Number(ld.fromFloor)) ? Number(ld.fromFloor) : 0, toFloor:Number.isFinite(Number(ld.toFloor)) ? Number(ld.toFloor) : 0,
+          direction:ld.direction === 'down' ? 'down' : 'up',
+          tier:Math.max(1, Number(ld.tier)||1),
+          portDir:ld.portDir || (kind === 'belt' ? 'output' : 'input'),
+          outward:normDir(ld.outward) || {x:0,y:1}, pillRotation:Number(ld.pillRotation)||0,
+          sourceAttachment:ld.sourceAttachment || null, sourceConnector:ld.sourceConnector || null
+        };
+        lifts.push(lift);
+      }
+      nextLiftId = Math.max(nextLiftId, lifts.reduce((m,l)=>Math.max(m,l.id+1),1));
+      rerouteAllConnectors();
+      updateFloorSelect();
+      invalidateCostPanel(); invalidateRender();
+    } catch(e) { alert('Failed to load plan: ' + e.message); }
+  };
+  reader.readAsText(file);
+  event.target.value = '';
+}
+
+// ═══════════════════════════════════════════════════════════════
+// GROUP ROTATION / PLACEMENT PREVIEW HELPERS
+// ═══════════════════════════════════════════════════════════════
+function rotateOffsetClockwise(dx, dy, turns) {
+  const t = ((turns % 4) + 4) % 4;
+  if (t === 1) return { x:-dy, y:dx };
+  if (t === 2) return { x:-dx, y:-dy };
+  if (t === 3) return { x:dy, y:-dx };
+  return { x:dx, y:dy };
+}
+
+function alignBuildingsToEdgeGrid(ids) {
+  let changed = false;
+  for (const id of ids) {
+    const b = state.buildingIdMap.get(id);
+    if (!b) continue;
+    const snapped = snapBuildingCenter(b.type, b.rotation, b.x, b.y);
+    if (!almostEqual(b.x, snapped.x) || !almostEqual(b.y, snapped.y)) {
+      b.x = snapped.x;
+      b.y = snapped.y;
+      changed = true;
+    }
+  }
+  if (changed) rerouteAllConnectors();
+}
+
+function nearestGridSafeRotationPivot(x, y) {
+  // A 90° rotation preserves metre-aligned sides when both pivot coordinates are
+  // whole metres or both are half metres. Choose whichever pair is nearest.
+  const whole = { x:snapToGrid(x), y:snapToGrid(y) };
+  const half = {
+    x:(Math.round(x / SCALE - 0.5) + 0.5) * SCALE,
+    y:(Math.round(y / SCALE - 0.5) + 0.5) * SCALE
+  };
+  const wholeDist = (whole.x - x) ** 2 + (whole.y - y) ** 2;
+  const halfDist = (half.x - x) ** 2 + (half.y - y) ** 2;
+  return halfDist < wholeDist ? half : whole;
+}
+
+function rotateSelectedBuildingsInPlace() {
+  const selected = state.selected.map(id => state.buildingIdMap.get(id)).filter(Boolean);
+  if (!selected.length) return;
+  alignBuildingsToEdgeGrid(state.selected);
+  let bounds = null;
+  for (const b of selected) bounds = expandBounds(bounds, getBuildingBounds(b));
+  if (!bounds) return;
+  const pivot = nearestGridSafeRotationPivot((bounds.x1 + bounds.x2) / 2, (bounds.y1 + bounds.y2) / 2);
+  for (const b of selected) {
+    const offset = rotateOffsetClockwise(b.x - pivot.x, b.y - pivot.y, 1);
+    b.rotation = (b.rotation + 90) % 360;
+    b.x = Math.round((pivot.x + offset.x) * 1000) / 1000;
+    b.y = Math.round((pivot.y + offset.y) * 1000) / 1000;
+    rerouteConnectorsForBuilding(b.id);
+  }
+  rerouteAllConnectors();
+}
+
+function placementLocalBounds(items, turns) {
+  let bounds = null;
+  for (const src of items) {
+    const offset = rotateOffsetClockwise(src.x, src.y, turns);
+    const rotation = (src.rotation + turns * 90) % 360;
+    const ghost = { type:src.type, x:offset.x, y:offset.y, rotation };
+    bounds = expandBounds(bounds, getBuildingBounds(ghost));
+  }
+  return bounds;
+}
+
+function getPastePreviewBuildings() {
+  if (!pastePreview || !pastePreview.items.length) return [];
+  const localBounds = placementLocalBounds(pastePreview.items, pastePreview.turns);
+  if (!localBounds) return [];
+  const localCenterX = (localBounds.x1 + localBounds.x2) / 2;
+  const localCenterY = (localBounds.y1 + localBounds.y2) / 2;
+  // Only translate the template by whole metres. That keeps every building's
+  // already-aligned perpendicular sides on the 1m grid as the group moves.
+  const bottomLeftAnchor = pastePreview.anchor === 'bottom-left';
+  const tx = snapToGrid(state.worldX - (bottomLeftAnchor ? localBounds.x1 : localCenterX));
+  const ty = snapToGrid(state.worldY - (bottomLeftAnchor ? localBounds.y2 : localCenterY));
+  return pastePreview.items.map((src, i) => {
+    const offset = rotateOffsetClockwise(src.x, src.y, pastePreview.turns);
+    const rotation = (src.rotation + pastePreview.turns * 90) % 360;
+    return {
+      id:-(i + 1), type:src.type,
+      x:Math.round((tx + offset.x) * 1000) / 1000,
+      y:Math.round((ty + offset.y) * 1000) / 1000,
+      rotation, floor:state.floor
+    };
+  });
+}
+
+function previewBuildingsOverlap(preview) {
+  for (let i = 0; i < preview.length; i++) {
+    const a = getBuildingBounds(preview[i]);
+    for (const existing of buildings) {
+      if (existing.floor === state.floor && rectsOverlap(a, getBuildingBounds(existing))) return true;
+    }
+    for (let j = 0; j < i; j++) {
+      if (rectsOverlap(a, getBuildingBounds(preview[j]))) return true;
+    }
+  }
+  return false;
+}
+
+function beginPlacementPreview(items, options = {}) {
+  if (!items || !items.length) return;
+  drawSource = null;
+  drawType = null;
+  drawSnapTarget = null;
+  state.tool = null;
+  document.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+  const selectButton = document.querySelector('[data-type="select"]');
+  if (selectButton) selectButton.classList.add('active');
+  pastePreview = {
+    items:items.map(item => ({...item})),
+    turns:0,
+    repeat:!!options.repeat,
+    kind:options.kind || 'clipboard',
+    anchor:options.anchor || 'center',
+    message:options.message || ''
+  };
+  state.selected = [];
+  selectedLabelId = null;
+  selectedBeltId = null;
+  selectedPipeId = null;
+  document.getElementById('tool-label').textContent = pastePreview.message ||
+    `📋 Place ${pastePreview.items.length} copied building${pastePreview.items.length === 1 ? '' : 's'} — R rotates`;
+}
+
+function beginPasteCopiedBuildings() {
+  if (!copiedBuildings.length) return;
+  beginPlacementPreview(copiedBuildings, {
+    repeat:false,
+    kind:'clipboard',
+    message:`📋 Place ${copiedBuildings.length} copied building${copiedBuildings.length === 1 ? '' : 's'} — R rotates`
+  });
+}
+
+function commitPastePreview() {
+  const preview = getPastePreviewBuildings();
+  if (!preview.length || previewBuildingsOverlap(preview)) return;
+  const newIds = [];
+  for (const src of preview) {
+    const b = { id:state.nextId++, type:src.type, x:src.x, y:src.y, rotation:src.rotation, floor:state.floor };
+    buildings.push(b);
+    state.buildingIdMap.set(b.id, b);
+    newIds.push(b.id);
+  }
+  rerouteAllConnectors();
+  if (pastePreview.repeat) {
+    state.selected = [];
+    selectedLabelId = null;
+  } else {
+    state.selected = newIds;
+    pastePreview = null;
+    document.getElementById('tool-label').textContent = '🔍 Selection / Edit';
+  }
+}
+
+function placeLiftFromTarget(kind, target) {
+  if (!target) return false;
+  const direction = state.liftDirection[kind];
+  const toFloor = state.floor + (direction === 'up' ? 1 : -1);
+  if (!hasFloor(toFloor)) {
+    document.getElementById('tool-label').textContent = direction === 'up' ? 'Add the floor above first' : 'Add the floor below first';
+    return false;
+  }
+  if (lifts.some(l => { const a=getLiftAnchor(l); return l.kind === kind && l.fromFloor === state.floor && Math.hypot(a.x-target.x,a.y-target.y) < SCALE*0.25; })) return false;
+  const lift = {
+    id:nextLiftId++, kind, x:target.x, y:target.y,
+    fromFloor:state.floor, toFloor, direction,
+    tier:state.connectorTier[kind],
+    portDir:target.standalone && kind === 'belt' ? 'output' : (target.dir || (kind === 'belt' ? 'output' : 'input')),
+    outward:normDir(target.outward) || {x:0,y:1},
+    pillRotation:Number(target.pillRotation)||0,
+    sourceAttachment:target.sourceAttachment || null,
+    sourceConnector:target.sourceConnector || null
+  };
+  lifts.push(lift);
+  selectedLiftId = lift.id;
+  state.selected = []; selectedBeltId = null; selectedPipeId = null; selectedLabelId = null;
+  return true;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// CONTEXTUAL CURSOR
+// ═══════════════════════════════════════════════════════════════
+function updateCanvasCursor() {
+  let cursor = 'default';
+  if (state.dragging === 'pan' || state.dragging === 'place' || state.dragging === 'label') {
+    cursor = 'grabbing';
+  } else if (state.dragging === 'select') {
+    cursor = 'crosshair';
+  } else if (pastePreview || state.tool === 'label_box' || state.tool === 'conveyor_belt' ||
+             state.tool === 'pipeline' || state.tool === 'conveyor_lift' || state.tool === 'vertical_pipe' || (state.tool && BUILDING_DATA[state.tool])) {
+    cursor = 'crosshair';
+  }
+  // Select/Edit deliberately keeps the normal arrow until a drag or selection
+  // action actually begins.
+  if (canvas.style.cursor !== cursor) canvas.style.cursor = cursor;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// INPUT HANDLING
+// ═══════════════════════════════════════════════════════════════
+canvas.addEventListener('contextmenu', e => e.preventDefault());
+
+canvas.addEventListener('mousedown', e => {
+  const sx = e.clientX - canvas.getBoundingClientRect().left;
+  const sy = e.clientY - canvas.getBoundingClientRect().top;
+  const w = screenToWorld(sx, sy);
+  state.mouseX = sx; state.mouseY = sy;
+  state.worldX = w.x; state.worldY = w.y;
+
+  // Always allow pan on right click
+  if (e.button === 2) {
+    // Cancel active belt/pipe drawing
+    if (drawSource) { drawSource = null; drawType = null; drawSnapTarget = null; }
+    state.dragging = 'pan';
+    state.dragStart = { x: sx, y: sy };
+    return;
+  }
+
+  if (e.button !== 0) return; // left click only
+  state.ctrlHeld = e.ctrlKey || e.metaKey;
+
+  if (state.tool === 'conveyor_lift' || state.tool === 'vertical_pipe') {
+    const kind = state.tool === 'conveyor_lift' ? 'belt' : 'pipe';
+    placeLiftFromTarget(kind, getLiftPlacementTarget(w.x, w.y, kind));
+    return;
+  }
+
+  // Labels remain selectable/movable from every tool and are edited only on a
+  // double-click. When a connector tool is active, however, an I/O pill beneath
+  // the cursor always wins so overlapping labels can never block a port click.
+  const anyPortUnderCursor = getIOAtWorld(w.x, w.y, null);
+  // Clicking a pill always starts the appropriate connector, even from Select or a building tool.
+  if (!drawSource && anyPortUnderCursor && state.tool !== 'label_box') {
+    beginConnectorFromPort(anyPortUnderCursor);
+    return;
+  }
+  const activeConnectorType = state.tool === 'conveyor_belt' ? 'belt' : (state.tool === 'pipeline' ? 'pipe' : null);
+  const connectorPortUnderCursor = activeConnectorType ? getIOAtWorld(w.x, w.y, activeConnectorType) : null;
+  const clickedLabelAnywhere = connectorPortUnderCursor ? null : getLabelAtScreen(sx, sy);
+  if (clickedLabelAnywhere) {
+    state.selected = [];
+    selectedBeltId = null;
+    selectedPipeId = null;
+    selectedLiftId = null;
+    selectedLabelId = clickedLabelAnywhere.id;
+    state.dragging = 'label';
+    labelMoveStart = {
+      mouse:{x:w.x,y:w.y}, screen:{x:sx,y:sy},
+      x:clickedLabelAnywhere.x, y:clickedLabelAnywhere.y,
+      moved:false
+    };
+    return;
+  }
+
+  if (pastePreview) {
+    commitPastePreview();
+    return;
+  }
+
+  // ── Label box placement ──
+  if (state.tool === 'label_box') {
+    const text = cleanLabelText(window.prompt('Label text:', ''));
+    if (text) {
+      labels.push({ id:nextLabelId++, text, x:snapToGrid(w.x), y:snapToGrid(w.y), floor:state.floor });
+    }
+    return;
+  }
+
+  // ── Conveyor belt / pipeline tool ──
+  if (state.tool === 'conveyor_belt' || state.tool === 'pipeline') {
+    const typeFilter = state.tool === 'conveyor_belt' ? 'belt' : 'pipe';
+    if (!drawSource) {
+      // A connector may be drawn in either direction. Once a port is chosen, the
+      // other end must still be the opposite direction and the same connector type.
+      const pt = getIOAtWorld(w.x, w.y, typeFilter);
+      if (pt) {
+        drawSource = {
+          x: pt.worldX,
+          y: pt.worldY,
+          dir: portOutwardDir(pt),
+          attachment: makeConnectorAttachment(pt)
+        };
+        drawType = typeFilter;
+        drawSnapTarget = pt;
+      } else {
+        drawSource = { x: snapToGrid(w.x), y: snapToGrid(w.y), dir: null, attachment: null };
+        drawType = typeFilter;
+        drawSnapTarget = null;
+      }
+    } else {
+      const rawTarget = getIOAtWorld(w.x, w.y, typeFilter);
+      const target = rawTarget && connectorAttachmentsCompatible(drawSource.attachment, makeConnectorAttachment(rawTarget))
+        ? rawTarget
+        : null;
+
+      // Do not silently place a free endpoint on top of an incompatible port.
+      if (rawTarget && !target) return;
+
+      const endX = target ? target.worldX : snapToGrid(w.x);
+      const endY = target ? target.worldY : snapToGrid(w.y);
+      const dstDir = target ? portOutwardDir(target) : null;
+      const pts = computePath(drawSource.x, drawSource.y, endX, endY, state.floor, drawSource.dir, dstDir);
+      if (pts.length >= 2) {
+        const conn = {
+          id: nextBeltId++,
+          points: pts,
+          floor: state.floor,
+          tier: state.connectorTier[typeFilter],
+          from: drawSource.attachment || null,
+          to: target ? makeConnectorAttachment(target) : null,
+          via: null
+        };
+        if (typeFilter === 'belt') belts.push(conn);
+        else pipes.push(conn);
+        rerouteConnector(conn);
+      }
+      drawSource = null;
+      drawType = null;
+      drawSnapTarget = null;
+    }
+    return;
+  }
+
+  // ── Building placement ──
+  if (state.tool && BUILDING_DATA[state.tool]) {
+    const snap = snapBuildingCenter(state.tool, state.rotation, w.x, w.y);
+    // Check for overlap
+    const d = BUILDING_DATA[state.tool];
+    const w2 = d.w * SCALE / 2, h2 = d.h * SCALE / 2;
+    let overlap = false;
+    for (const b of buildings) {
+      if (b.floor !== state.floor) continue;
+      const bd = BUILDING_DATA[b.type];
+      if (!bd) continue;
+      const bw2 = bd.w * SCALE / 2, bh2 = bd.h * SCALE / 2;
+      let bx1, bx2, by1, by2;
+      if (b.rotation % 180 !== 0) {
+        bx1 = b.x - bh2; bx2 = b.x + bh2;
+        by1 = b.y - bw2; by2 = b.y + bw2;
+      } else {
+        bx1 = b.x - bw2; bx2 = b.x + bw2;
+        by1 = b.y - bh2; by2 = b.y + bh2;
+      }
+      let ax1, ax2, ay1, ay2;
+      if (state.rotation % 180 !== 0) {
+        ax1 = snap.x - h2; ax2 = snap.x + h2;
+        ay1 = snap.y - w2; ay2 = snap.y + w2;
+      } else {
+        ax1 = snap.x - w2; ax2 = snap.x + w2;
+        ay1 = snap.y - h2; ay2 = snap.y + h2;
+      }
+      if (ax1 < bx2 && ax2 > bx1 && ay1 < by2 && ay2 > by1) { overlap = true; break; }
+    }
+    if (!overlap) {
+      const b = {
+        id: state.nextId++,
+        type: state.tool,
+        x: snap.x, y: snap.y,
+        rotation: state.rotation,
+        floor: state.floor
+      };
+      buildings.push(b);
+      state.buildingIdMap.set(b.id, b);
+      rerouteAllConnectors();
+    }
+    return;
+  }
+
+  // ── Selection mode (tool === null) ──
+  if (state.tool === null) {
+    const clickedLift = getLiftAtWorld(w.x, w.y);
+    const clickedBelt = getBeltPipeAt(w.x, w.y);
+    const clicked = getBuildingAt(w.x, w.y);
+    if (state.shiftHeld) {
+      selectedLiftId = null;
+      state.dragging = 'select';
+      state.dragStart = { x: sx, y: sy };
+      state.worldDragStart = { x: w.x, y: w.y };
+    } else if (clickedLift) {
+      selectedLiftId = clickedLift.id;
+      selectedBeltId = null; selectedPipeId = null; selectedLabelId = null; state.selected = [];
+    } else if (clickedBelt) {
+      selectedBeltId = null; selectedPipeId = null; selectedLabelId = null; selectedLiftId = null;
+      if (clickedBelt.belt !== false) {
+        selectedBeltId = clickedBelt.id;
+        // Check if clicking near endpoint handle (for dragging)
+        const ep = clickedBelt.points;
+        const thr = 8 / camera.zoom;
+        for (let i = 0; i < ep.length; i++) {
+          if (Math.abs(w.x - ep[i].x) <= thr && Math.abs(w.y - ep[i].y) <= thr) {
+            editingEndpoint = { type: 'belt', id: clickedBelt.id, pointIdx: i, isEndpoint: i === 0 || i === ep.length - 1 };
+            state.dragging = 'place'; // reuse place drag mode
+            state.dragStart = { x: sx, y: sy };
+            break;
+          }
+        }
+      } else {
+        selectedPipeId = clickedBelt.obj.id;
+        const ep = clickedBelt.obj.points;
+        const thr = 8 / camera.zoom;
+        for (let i = 0; i < ep.length; i++) {
+          if (Math.abs(w.x - ep[i].x) <= thr && Math.abs(w.y - ep[i].y) <= thr) {
+            editingEndpoint = { type: 'pipe', id: clickedBelt.obj.id, pointIdx: i, isEndpoint: i === 0 || i === ep.length - 1 };
+            state.dragging = 'place';
+            state.dragStart = { x: sx, y: sy };
+            break;
+          }
+        }
+      }
+    } else if (clicked) {
+      selectedBeltId = null; selectedPipeId = null; selectedLabelId = null; selectedLiftId = null;
+      const additive = e.ctrlKey || e.metaKey;
+      if (additive) {
+        const idx = state.selected.indexOf(clicked.id);
+        if (idx >= 0) state.selected.splice(idx, 1);
+        else state.selected.push(clicked.id);
+      } else if (!state.selected.includes(clicked.id)) {
+        state.selected = [clicked.id];
+      }
+      // Ctrl-click changes membership only; a normal click can immediately drag
+      // the current selection as before.
+      if (!additive && state.selected.includes(clicked.id)) {
+        state.dragging = 'place';
+        state.dragStart = { x: sx, y: sy };
+        state.worldDragStart = { x: w.x, y: w.y };
+        alignBuildingsToEdgeGrid(state.selected);
+        state.moveStart = {
+          mouse: { x:w.x, y:w.y },
+          positions: state.selected.map(id => {
+            const b = state.buildingIdMap.get(id);
+            return b ? { id, x:b.x, y:b.y } : null;
+          }).filter(Boolean)
+        };
+      }
+    } else {
+      selectedBeltId = null; selectedPipeId = null; selectedLabelId = null; selectedLiftId = null;
+      state.selected = [];
+      rerouteAllConnectors();
+    }
+  }
+});
+
+canvas.addEventListener('mousemove', e => {
+  mouseInsideCanvas = true;
+  const rect = canvas.getBoundingClientRect();
+  const sx = e.clientX - rect.left;
+  const sy = e.clientY - rect.top;
+  const w = screenToWorld(sx, sy);
+  state.mouseX = sx; state.mouseY = sy;
+  state.worldX = w.x; state.worldY = w.y;
+
+  if (state.dragging === 'pan') {
+    const dx = sx - state.dragStart.x;
+    const dy = sy - state.dragStart.y;
+    camera.x += dx;
+    camera.y += dy;
+    state.dragStart = { x: sx, y: sy };
+  } else if (state.dragging === 'select') {
+    // Selection rect being drawn
+  } else if (state.dragging === 'place') {
+    if (editingEndpoint) {
+      const arr = editingEndpoint.type === 'belt' ? belts : pipes;
+      const conn = arr.find(c => c.id === editingEndpoint.id);
+      if (conn) {
+        const typeFilter = editingEndpoint.type === 'belt' ? 'belt' : 'pipe';
+        const key = editingEndpoint.pointIdx === 0 ? 'from' : 'to';
+        const otherKey = key === 'from' ? 'to' : 'from';
+        const rawTarget = getIOAtWorld(w.x, w.y, typeFilter);
+        const target = rawTarget && connectorAttachmentsCompatible(conn[otherKey], makeConnectorAttachment(rawTarget))
+          ? rawTarget
+          : null;
+        if (rawTarget && !target) return;
+        const snap = target ? { x:target.worldX, y:target.worldY } : { x:snapToGrid(w.x), y:snapToGrid(w.y) };
+        if (editingEndpoint.isEndpoint) {
+          // Dragging either endpoint re-attaches only to the opposite port direction.
+          conn[key] = target ? makeConnectorAttachment(target) : null;
+          conn.points[key === 'from' ? 0 : conn.points.length - 1] = snap;
+        } else {
+          // Dragging a middle handle becomes a routed waypoint instead of bending one corner out of shape.
+          conn.via = snap;
+        }
+        rerouteConnector(conn);
+      }
+    } else if (state.selected.length >= 1 && state.moveStart) {
+      // A whole-metre translation preserves each building's edge-aligned grid residue.
+      const dx = snapToGrid(w.x - state.moveStart.mouse.x);
+      const dy = snapToGrid(w.y - state.moveStart.mouse.y);
+      const moved = [];
+      for (const pos of state.moveStart.positions) {
+        const b = state.buildingIdMap.get(pos.id);
+        if (!b) continue;
+        const nx = pos.x + dx, ny = pos.y + dy;
+        if (!almostEqual(b.x, nx) || !almostEqual(b.y, ny)) {
+          b.x = nx; b.y = ny; moved.push(b.id);
+        }
+      }
+      for (const id of moved) rerouteConnectorsForBuilding(id);
+      if (moved.length) rerouteAllConnectors();
+    }
+  } else if (state.dragging === 'label' && selectedLabelId !== null && labelMoveStart) {
+    const label = labels.find(l => l.id === selectedLabelId);
+    if (label) {
+      if (Math.hypot(sx - labelMoveStart.screen.x, sy - labelMoveStart.screen.y) >= 4) labelMoveStart.moved = true;
+      if (labelMoveStart.moved) {
+        label.x = labelMoveStart.x + snapToGrid(w.x - labelMoveStart.mouse.x);
+        label.y = labelMoveStart.y + snapToGrid(w.y - labelMoveStart.mouse.y);
+      }
+    }
+  }
+  updateCanvasCursor();
+});
+
+canvas.addEventListener('mouseleave', () => { mouseInsideCanvas = false; updateCanvasCursor(); });
+
+canvas.addEventListener('dblclick', e => {
+  const rect = canvas.getBoundingClientRect();
+  const sx = e.clientX - rect.left;
+  const sy = e.clientY - rect.top;
+  const label = getLabelAtScreen(sx, sy);
+  if (!label) return;
+  selectedLabelId = label.id;
+  state.selected = [];
+  selectedBeltId = null;
+  selectedPipeId = null;
+  selectedLiftId = null;
+  editLabel(label);
+  e.preventDefault();
+  e.stopPropagation();
+});
+
+canvas.addEventListener('mouseup', e => {
+  if (e.button === 2) {
+    state.dragging = null;
+    updateCanvasCursor();
+    return;
+  }
+  if (state.dragging === 'select' && state.shiftHeld) {
+    const start = state.worldDragStart;
+    const end = screenToWorld(state.mouseX, state.mouseY);
+    const rect = getBuildingsInRect(start.x, start.y, end.x, end.y);
+    state.selected = rect.map(b => b.id);
+  }
+
+  editingEndpoint = null;
+  state.moveStart = null;
+  labelMoveStart = null;
+  state.dragging = null;
+  updateCanvasCursor();
+});
+
+// ── Scroll: ALWAYS zoom (rotation is R key only) ──
+canvas.addEventListener('wheel', e => {
+  e.preventDefault();
+  const rect = canvas.getBoundingClientRect();
+  const sx = e.clientX - rect.left;
+  const sy = e.clientY - rect.top;
+  const w = screenToWorld(sx, sy);
+  const delta = -Math.sign(e.deltaY) * 0.1;
+  camera.zoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, camera.zoom + delta * camera.zoom));
+  camera.x = sx - w.x * camera.zoom;
+  camera.y = sy - w.y * camera.zoom;
+  document.getElementById('zoom-display').textContent = camera.zoom.toFixed(1) + 'x';
+});
+
+
+function copySelectedBuildings() {
+  if (!state.selected.length) return;
+  alignBuildingsToEdgeGrid(state.selected);
+  const selected = state.selected.map(id => state.buildingIdMap.get(id)).filter(Boolean);
+  if (!selected.length) return;
+  let bounds = null;
+  for (const b of selected) bounds = expandBounds(bounds, getBuildingBounds(b));
+  // Store a grid-origin template rather than centre-relative offsets. Whole-metre
+  // translations and 90° rotations then preserve each building's aligned sides.
+  const origin = {
+    x:Math.floor(bounds.x1 / SCALE) * SCALE,
+    y:Math.floor(bounds.y1 / SCALE) * SCALE
+  };
+  copiedBuildings = selected.map(b => ({ type:b.type, x:b.x-origin.x, y:b.y-origin.y, rotation:b.rotation }));
+}
+function pasteCopiedBuildings() {
+  beginPasteCopiedBuildings();
+}
+
+function isTypingTarget(el) {
+  if (!el) return false;
+  const tag = (el.tagName || '').toLowerCase();
+  return tag === 'input' || tag === 'textarea' || tag === 'select' || el.isContentEditable;
+}
+
+// ── Keyboard ──
+window.addEventListener('keydown', e => {
+  if (isTypingTarget(e.target)) return;
+  if ((e.ctrlKey || e.metaKey) && (e.key === 'c' || e.key === 'C')) { e.preventDefault(); copySelectedBuildings(); return; }
+  if ((e.ctrlKey || e.metaKey) && (e.key === 'v' || e.key === 'V')) { e.preventDefault(); pasteCopiedBuildings(); return; }
+  if (e.key === 'Escape') {
+    if (pastePreview) { pastePreview = null; document.getElementById('tool-label').textContent = '🔍 Selection / Edit'; updateCanvasCursor(); }
+    else if (drawSource) { drawSource = null; drawType = null; drawSnapTarget = null; }
+    else if (selectedBeltId !== null || selectedPipeId !== null || selectedLiftId !== null) { selectedBeltId = null; selectedPipeId = null; selectedLiftId = null; }
+    else { selectTool(null); document.getElementById('import-modal').classList.remove('open'); document.getElementById('settings-modal').classList.remove('open'); }
+  }
+  if (e.key === 'r' || e.key === 'R') {
+    if (pastePreview) {
+      pastePreview.turns = (pastePreview.turns + 1) % 4;
+    } else if (state.selected.length > 0) {
+      rotateSelectedBuildingsInPlace();
+    } else if (state.tool && BUILDING_DATA[state.tool]) {
+      state.rotation = (state.rotation + 90) % 360;
+    }
+  }
+  if (e.key === 'Shift') { state.shiftHeld = true; }
+  if (e.key === 'Control' || e.key === 'Meta') { state.ctrlHeld = true; }
+  if (e.key === 'b' || e.key === 'B') { selectTool('conveyor_belt'); }
+  if (e.key === 'p' || e.key === 'P') { selectTool('pipeline'); }
+  if (e.key === 'l' || e.key === 'L') { selectTool('label_box'); }
+  if (e.key === 'Delete' || e.key === 'Backspace') {
+    if (selectedLabelId !== null) {
+      const idx = labels.findIndex(l => l.id === selectedLabelId);
+      if (idx >= 0) labels.splice(idx, 1);
+      selectedLabelId = null;
+    } else if (selectedBeltId !== null) {
+      const idx = belts.findIndex(b => b.id === selectedBeltId);
+      if (idx >= 0) belts.splice(idx, 1);
+      selectedBeltId = null;
+    } else if (selectedPipeId !== null) {
+      const idx = pipes.findIndex(p => p.id === selectedPipeId);
+      if (idx >= 0) pipes.splice(idx, 1);
+      selectedPipeId = null;
+    } else if (selectedLiftId !== null) {
+      const idx = lifts.findIndex(l => l.id === selectedLiftId);
+      if (idx >= 0) { detachLiftReferences(lifts[idx].id); lifts.splice(idx, 1); rerouteAllConnectors(); }
+      selectedLiftId = null;
+    } else {
+      const ids = new Set(state.selected);
+      for (let i = buildings.length - 1; i >= 0; i--) {
+        if (ids.has(buildings[i].id)) {
+          state.buildingIdMap.delete(buildings[i].id);
+          buildings.splice(i, 1);
+        }
+      }
+      state.selected = [];
+      rerouteAllConnectors();
+    }
+  }
+});
+window.addEventListener('blur', () => { state.shiftHeld = false; state.ctrlHeld = false; invalidateRender(); });
+window.addEventListener('keyup', e => {
+  if (e.key === 'Shift') { state.shiftHeld = false; }
+  if (e.key === 'Control' || e.key === 'Meta') { state.ctrlHeld = false; }
+});
+
+// ═══════════════════════════════════════════════════════════════
+// RENDERING (all in world coords — camera transform applied by caller)
+// ═══════════════════════════════════════════════════════════════
+
+function getVisibleWorldRect(pad = 0) {
+  return { x1:(-camera.x)/camera.zoom-pad, y1:(-camera.y)/camera.zoom-pad, x2:(W-camera.x)/camera.zoom+pad, y2:(H-camera.y)/camera.zoom+pad };
+}
+function boundsIntersect(a,b) { return !!a && !!b && a.x1 <= b.x2 && a.x2 >= b.x1 && a.y1 <= b.y2 && a.y2 >= b.y1; }
+function isBuildingVisible(b, view) { return boundsIntersect(getBuildingBounds(b), view); }
+function isConnectorVisible(conn, view) { return boundsIntersect(getConnectorBounds(conn), view); }
+
+// ── Foundation Grid ──
+function drawHighlightedFoundationArea(tileSize) {
+  const tiles = foundationTilesForBounds(getFoundationBounds(state.floor));
+  if (!tiles) return;
+  const view = getVisibleWorldRect(tileSize);
+  const x1 = Math.max(tiles.x1, view.x1), y1 = Math.max(tiles.y1, view.y1);
+  const x2 = Math.min(tiles.x2, view.x2), y2 = Math.min(tiles.y2, view.y2);
+  if (x2 <= x1 || y2 <= y1) return;
+  ctx.fillStyle = 'rgba(245,130,35,0.16)';
+  ctx.fillRect(x1, y1, x2-x1, y2-y1);
+}
+
+function drawArrowHeadWorld(x, y, angle, size) {
+  ctx.beginPath();
+  ctx.moveTo(x, y);
+  ctx.lineTo(x - Math.cos(angle - Math.PI / 6) * size, y - Math.sin(angle - Math.PI / 6) * size);
+  ctx.moveTo(x, y);
+  ctx.lineTo(x - Math.cos(angle + Math.PI / 6) * size, y - Math.sin(angle + Math.PI / 6) * size);
+  ctx.stroke();
+}
+
+function drawDimensionLabelWorld(x, y, text) {
+  const z = camera.zoom;
+  const fontSize = 12 / z;
+  ctx.save();
+  ctx.font = `bold ${fontSize}px sans-serif`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  const padX = 6 / z, padY = 3 / z;
+  const width = ctx.measureText(text).width + padX * 2;
+  const height = fontSize + padY * 2;
+  ctx.fillStyle = 'rgba(20,20,20,0.92)';
+  ctx.fillRect(x - width / 2, y - height / 2, width, height);
+  ctx.strokeStyle = '#f5a623';
+  ctx.lineWidth = 1 / z;
+  ctx.strokeRect(x - width / 2, y - height / 2, width, height);
+  ctx.fillStyle = '#ffd28a';
+  ctx.fillText(text, x, y);
+  ctx.restore();
+}
+
+function drawFoundationDimensions() {
+  const tiles = foundationTilesForBounds(getFoundationBounds(state.floor));
+  if (!tiles) return;
+  const z = camera.zoom;
+  const gap = 22 / z;
+  const tick = 7 / z;
+  const head = 8 / z;
+  const arrowX = tiles.x1 - gap;
+  const arrowY = tiles.y2 + gap;
+  ctx.save();
+  ctx.strokeStyle = '#f5a623';
+  ctx.lineWidth = 2 / z;
+  ctx.lineCap = 'round';
+
+  // Left vertical dimension.
+  ctx.beginPath();
+  ctx.moveTo(arrowX, tiles.y1); ctx.lineTo(arrowX, tiles.y2);
+  ctx.moveTo(tiles.x1 - tick, tiles.y1); ctx.lineTo(arrowX + tick, tiles.y1);
+  ctx.moveTo(tiles.x1 - tick, tiles.y2); ctx.lineTo(arrowX + tick, tiles.y2);
+  ctx.stroke();
+  drawArrowHeadWorld(arrowX, tiles.y1, -Math.PI / 2, head);
+  drawArrowHeadWorld(arrowX, tiles.y2, Math.PI / 2, head);
+  drawDimensionLabelWorld(arrowX, (tiles.y1 + tiles.y2) / 2, `${tiles.rows} foundation${tiles.rows === 1 ? '' : 's'}`);
+
+  // Bottom horizontal dimension.
+  ctx.beginPath();
+  ctx.moveTo(tiles.x1, arrowY); ctx.lineTo(tiles.x2, arrowY);
+  ctx.moveTo(tiles.x1, tiles.y2 - tick); ctx.lineTo(tiles.x1, arrowY + tick);
+  ctx.moveTo(tiles.x2, tiles.y2 - tick); ctx.lineTo(tiles.x2, arrowY + tick);
+  ctx.stroke();
+  drawArrowHeadWorld(tiles.x1, arrowY, Math.PI, head);
+  drawArrowHeadWorld(tiles.x2, arrowY, 0, head);
+  drawDimensionLabelWorld((tiles.x1 + tiles.x2) / 2, arrowY, `${tiles.cols} foundation${tiles.cols === 1 ? '' : 's'}`);
+  ctx.restore();
+}
+
+function drawFoundation() {
+  const tileSize = 8 * SCALE;
+  const view = getVisibleWorldRect(tileSize);
+  const worldW = view.x2 - view.x1, worldH = view.y2 - view.y1;
+  const baseTiles = Math.max(worldW, worldH) / tileSize;
+  const lodPow = Math.max(0, Math.ceil(Math.log2(Math.max(1, baseTiles / 140))));
+  const majorStep = tileSize * Math.pow(2, lodPow);
+  const textureCols = Math.ceil(worldW / tileSize), textureRows = Math.ceil(worldH / tileSize);
+  const canTexture = camera.zoom >= 0.16 && textureCols * textureRows <= 2600 && assets.foundation && assets.foundation.complete && assets.foundation.naturalWidth > 0;
+
+  if (canTexture) {
+    const gx0 = Math.floor(view.x1 / tileSize) * tileSize;
+    const gy0 = Math.floor(view.y1 / tileSize) * tileSize;
+    for (let wx = gx0; wx <= view.x2; wx += tileSize) for (let wy = gy0; wy <= view.y2; wy += tileSize) {
+      ctx.drawImage(assets.foundation, wx, wy, tileSize, tileSize);
+    }
+  } else {
+    ctx.fillStyle = '#1e1e1e';
+    ctx.fillRect(view.x1, view.y1, worldW, worldH);
+  }
+
+  drawHighlightedFoundationArea(tileSize);
+
+  ctx.beginPath();
+  const gx0 = Math.floor(view.x1 / majorStep) * majorStep;
+  const gy0 = Math.floor(view.y1 / majorStep) * majorStep;
+  for (let x = gx0; x <= view.x2; x += majorStep) { ctx.moveTo(x, view.y1); ctx.lineTo(x, view.y2); }
+  for (let y = gy0; y <= view.y2; y += majorStep) { ctx.moveTo(view.x1, y); ctx.lineTo(view.x2, y); }
+  ctx.strokeStyle = camera.zoom < 0.08 ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.08)';
+  ctx.lineWidth = 1 / camera.zoom;
+  ctx.stroke();
+
+  if (camera.zoom >= 0.55) {
+    const minor = SCALE;
+    ctx.beginPath();
+    const mx0 = Math.floor(view.x1 / minor) * minor, my0 = Math.floor(view.y1 / minor) * minor;
+    for (let x = mx0; x <= view.x2; x += minor) if (Math.abs((x / tileSize) - Math.round(x / tileSize)) > EPS) { ctx.moveTo(x,view.y1); ctx.lineTo(x,view.y2); }
+    for (let y = my0; y <= view.y2; y += minor) if (Math.abs((y / tileSize) - Math.round(y / tileSize)) > EPS) { ctx.moveTo(view.x1,y); ctx.lineTo(view.x2,y); }
+    ctx.strokeStyle = 'rgba(255,255,255,0.025)';
+    ctx.lineWidth = 0.5 / camera.zoom;
+    ctx.stroke();
+  }
+}
+
+// ── Belts & Pipes (fixed 1m world width) ──
+function strokeConnectorPath(points, color, dashed, startAttached, endAttached) {
+  if (!points || points.length < 2) return;
+  ctx.strokeStyle = color;
+  ctx.lineWidth = CONNECTOR_WIDTH_WORLD;
+  ctx.lineCap = 'butt';
+  ctx.lineJoin = 'round';
+  if (dashed) ctx.setLineDash([BELT_STRIP_LENGTH_WORLD, BELT_STRIP_SPACING_WORLD]);
+  ctx.beginPath();
+  ctx.moveTo(points[0].x, points[0].y);
+  for (let i = 1; i < points.length; i++) ctx.lineTo(points[i].x, points[i].y);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  ctx.fillStyle = color;
+  const radius = CONNECTOR_WIDTH_WORLD / 2;
+  if (!startAttached) { ctx.beginPath(); ctx.arc(points[0].x, points[0].y, radius, 0, Math.PI * 2); ctx.fill(); }
+  if (!endAttached) { const p = points[points.length - 1]; ctx.beginPath(); ctx.arc(p.x, p.y, radius, 0, Math.PI * 2); ctx.fill(); }
+}
+function strokeBeltStrips(points) {
+  ctx.save();
+  ctx.strokeStyle = BELT_STRIP_COLOR;
+  ctx.lineWidth = BELT_STRIP_THICKNESS_WORLD;
+  ctx.lineCap = 'butt';
+  let distanceToNext = BELT_STRIP_SPACING_WORLD / 2;
+  for (let i = 0; i < points.length - 1; i++) {
+    const a = points[i], b = points[i + 1];
+    const dx = b.x - a.x, dy = b.y - a.y;
+    const segmentLength = Math.hypot(dx, dy);
+    if (segmentLength < EPS) continue;
+    const ux = dx / segmentLength, uy = dy / segmentLength;
+    const px = -uy, py = ux;
+    let along = distanceToNext;
+    while (along <= segmentLength + EPS) {
+      const cx = a.x + ux * along, cy = a.y + uy * along;
+      const half = BELT_STRIP_LENGTH_WORLD / 2;
+      ctx.beginPath();
+      ctx.moveTo(cx - px * half, cy - py * half);
+      ctx.lineTo(cx + px * half, cy + py * half);
+      ctx.stroke();
+      along += BELT_STRIP_SPACING_WORLD;
+    }
+    distanceToNext = along - segmentLength;
+  }
+  ctx.restore();
+}
+function drawConnectorTierLabels(conn, kind) {
+  const text = connectorTierLabel(kind, conn.tier || 1);
+  const spacing = 10 * SCALE;
+  ctx.save();
+  ctx.font = `bold ${1.15 * SCALE}px sans-serif`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  for (let i = 0; i < conn.points.length - 1; i++) {
+    const a = conn.points[i], b = conn.points[i+1];
+    const dx = b.x-a.x, dy=b.y-a.y;
+    const len = Math.hypot(dx,dy);
+    if (len < 4*SCALE) continue;
+    const ux=dx/len, uy=dy/len;
+    const count=Math.max(1,Math.floor(len/spacing));
+    for (let n=0;n<count;n++) {
+      const dist=(n+0.5)*len/count;
+      const x=a.x+ux*dist, y=a.y+uy*dist;
+      ctx.save();
+      ctx.translate(x,y);
+      let angle=Math.atan2(dy,dx);
+      if (angle > Math.PI/2 || angle < -Math.PI/2) angle += Math.PI;
+      ctx.rotate(angle);
+      const metrics=ctx.measureText(text);
+      const pad=0.35*SCALE;
+      ctx.fillStyle='rgba(20,20,20,.78)';
+      ctx.fillRect(-metrics.width/2-pad,-0.85*SCALE,metrics.width+pad*2,1.7*SCALE);
+      ctx.fillStyle='#fff';
+      ctx.fillText(text,0,0);
+      ctx.restore();
+    }
+  }
+  ctx.restore();
+}
+function drawConnector(conn, kind, isSelected) {
+  if (conn.points.length < 2) return;
+  const color = kind === 'belt' ? BELT_BASE_COLOR : PIPE_COLOR;
+  strokeConnectorPath(conn.points, color, false, !!conn.from, !!conn.to);
+  if (kind === 'belt' && (camera.zoom >= 0.22 || isSelected)) strokeBeltStrips(conn.points);
+  if (camera.zoom >= 0.42 || isSelected) drawConnectorTierLabels(conn, kind);
+
+  if (isSelected) {
+    const z = camera.zoom;
+    for (const p of conn.points) {
+      ctx.beginPath(); ctx.arc(p.x, p.y, 5 / z, 0, Math.PI * 2);
+      ctx.fillStyle = '#fff'; ctx.fill();
+      ctx.strokeStyle = color; ctx.lineWidth = 2 / z; ctx.stroke();
+    }
+  }
+}
+function drawBeltsAndPipes() {
+  const view = getVisibleWorldRect(4*SCALE);
+  for (const b of belts) if (b.floor === state.floor && isConnectorVisible(b, view)) drawConnector(b, 'belt', b.id === selectedBeltId);
+  for (const p of pipes) if (p.floor === state.floor && isConnectorVisible(p, view)) drawConnector(p, 'pipe', p.id === selectedPipeId);
+}
+
+// ── Buildings (world coords) ──
+function drawBuilding(b, alpha) {
+  const d = BUILDING_DATA[b.type];
+  if (!d) return;
+  const w = d.w * SCALE, h = d.h * SCALE;
+  const isSelected = state.selected.includes(b.id);
+  let drewImage = false;
+  const lowDetail = Math.max(w,h) * camera.zoom < 4 || camera.zoom < 0.055;
+
+  ctx.save();
+  ctx.translate(b.x, b.y);
+  ctx.rotate(b.rotation * Math.PI / 180);
+  ctx.globalAlpha = alpha == null ? 1 : alpha;
+
+  // Use the bounded sprite for normal viewing and interaction. At high zoom,
+  // switch back to the alpha-cropped original only when it has enough source
+  // pixels for the current on-screen size. This keeps normal rendering fast while
+  // avoiding enlarged 2x sprites becoming blurry.
+  const sprite = assetSprites[b.type];
+  const original = assets[b.type];
+  const src = assetSourceRects[b.type] || (original ? { sx:0, sy:0, sw:original.naturalWidth, sh:original.naturalHeight } : null);
+  const wantsHighDetail = !lowDetail && camera.zoom > 1.5 && original && original.complete && src &&
+    src.sw >= w * camera.zoom * 0.9 && src.sh >= h * camera.zoom * 0.9;
+  if (wantsHighDetail) {
+    try {
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
+      ctx.drawImage(original, src.sx, src.sy, src.sw, src.sh, -w/2, -h/2, w, h);
+      drewImage = true;
+    } catch (err) {
+      // Fall through to the lightweight sprite.
+    }
+  }
+  if (!drewImage && !lowDetail && sprite && sprite.width > 0 && sprite.height > 0) {
+    try {
+      ctx.drawImage(sprite, -w/2, -h/2, w, h);
+      drewImage = true;
+    } catch (err) {
+      delete assetSprites[b.type];
+    }
+  }
+
+  // Brief fallback while the initial sprite is being prepared.
+  if (!drewImage && !lowDetail) {
+    const img = assets[b.type];
+    if (img && img.complete && img.naturalWidth > 0) {
+      const src = assetSourceRects[b.type] || { sx:0, sy:0, sw:img.naturalWidth, sh:img.naturalHeight };
+      try {
+        ctx.drawImage(img, src.sx, src.sy, src.sw, src.sh, -w/2, -h/2, w, h);
+        drewImage = true;
+      } catch (err) {
+        delete assets[b.type];
+        delete assetSourceRects[b.type];
+      }
+    }
+  }
+
+  // A failed or unsupported image must never stop the animation loop or input handling.
+  if (!drewImage) {
+    ctx.fillStyle = d.color;
+    ctx.fillRect(-w/2, -h/2, w, h);
+    ctx.strokeStyle = '#222';
+    ctx.lineWidth = 2 / camera.zoom;
+    ctx.strokeRect(-w/2, -h/2, w, h);
+
+    // Direction arrow (front = bottom) is omitted when the whole building is only a few pixels.
+    if (!lowDetail) {
+      ctx.fillStyle = 'rgba(0,0,0,0.35)';
+      ctx.beginPath();
+      ctx.moveTo(0, h/2 - 6/camera.zoom);
+      ctx.lineTo(8/camera.zoom, h/2 - 14/camera.zoom);
+      ctx.lineTo(-8/camera.zoom, h/2 - 14/camera.zoom);
+      ctx.fill();
+    }
+  }
+
+  ctx.restore();
+
+  // Label always upright (outside rotation) when no usable image is available.
+  if (!drewImage && !lowDetail) {
+    ctx.save();
+    ctx.translate(b.x, b.y);
+    ctx.globalAlpha = alpha == null ? 1 : alpha;
+    ctx.fillStyle = alpha != null && alpha < 0.8 ? 'rgba(255,255,255,0.5)' : '#fff';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    let label = d.abbr || d.name;
+    let fontSize = 11;
+    const maxW = Math.min(w, h) - 4 / camera.zoom;
+    ctx.font = `bold ${fontSize}px sans-serif`;
+    let mw = ctx.measureText(label).width;
+    if (mw > maxW) {
+      fontSize = Math.max(7, maxW / mw * fontSize);
+      ctx.font = `bold ${fontSize}px sans-serif`;
+    }
+    ctx.fillText(label, 0, 0);
+    ctx.restore();
+  }
+
+  if (isSelected) {
+    ctx.save();
+    ctx.translate(b.x, b.y);
+    ctx.rotate(b.rotation * Math.PI / 180);
+    ctx.strokeStyle = '#f5a623';
+    ctx.lineWidth = 3 / camera.zoom;
+    ctx.setLineDash([6 / camera.zoom, 4 / camera.zoom]);
+    ctx.strokeRect(-w/2, -h/2, w, h);
+    ctx.setLineDash([]);
+    ctx.restore();
+  }
+}
+
+
+function drawSelectionOutlines() {
+  if (!state.selected.length) return;
+  for (const id of state.selected) {
+    const b = state.buildingIdMap.get(id);
+    if (!b || b.floor !== state.floor) continue;
+    const d = BUILDING_DATA[b.type];
+    if (!d) continue;
+    const w = d.w * SCALE, h = d.h * SCALE;
+    ctx.save();
+    ctx.translate(b.x, b.y);
+    ctx.rotate(b.rotation * Math.PI / 180);
+    ctx.strokeStyle = '#fff1a8';
+    ctx.lineWidth = 4 / camera.zoom;
+    ctx.setLineDash([7 / camera.zoom, 4 / camera.zoom]);
+    ctx.strokeRect(-w/2, -h/2, w, h);
+    ctx.setLineDash([]);
+    ctx.strokeStyle = '#f5a623';
+    ctx.lineWidth = 2 / camera.zoom;
+    ctx.strokeRect(-w/2, -h/2, w, h);
+    ctx.restore();
+  }
+}
+
+function drawPlacementBoundary(b, blocked = false) {
+  const d = BUILDING_DATA[b.type];
+  if (!d) return;
+  const w = d.w * SCALE, h = d.h * SCALE;
+  ctx.save();
+  ctx.translate(b.x, b.y);
+  ctx.rotate(b.rotation * Math.PI / 180);
+  ctx.strokeStyle = blocked ? '#ff8a80' : '#fff1a8';
+  ctx.lineWidth = 4 / camera.zoom;
+  ctx.setLineDash([7 / camera.zoom, 4 / camera.zoom]);
+  ctx.strokeRect(-w / 2, -h / 2, w, h);
+  ctx.setLineDash([]);
+  ctx.strokeStyle = blocked ? '#e74c3c' : '#f5a623';
+  ctx.lineWidth = 2 / camera.zoom;
+  ctx.strokeRect(-w / 2, -h / 2, w, h);
+  ctx.restore();
+}
+
+// ── Ghost building (placement preview) ──
+function drawGhost() {
+  if (!state.tool || !BUILDING_DATA[state.tool]) return;
+  const snap = snapBuildingCenter(state.tool, state.rotation, state.worldX, state.worldY);
+  const ghost = { type: state.tool, x: snap.x, y: snap.y, rotation: state.rotation, id: -1, floor:state.floor };
+  drawBuilding(ghost, 0.4);
+  drawPlacementBoundary(ghost, previewBuildingsOverlap([ghost]));
+}
+
+function drawPasteGhost() {
+  const preview = getPastePreviewBuildings();
+  if (!preview.length) return;
+  const blocked = previewBuildingsOverlap(preview);
+  for (const b of preview) {
+    drawBuilding(b, blocked ? 0.24 : 0.46);
+    drawPlacementBoundary(b, blocked);
+  }
+}
+// ── I/O port pills (fixed 2m world length) ──
+function pillPath(width, height) {
+  const r = height / 2;
+  ctx.beginPath();
+  ctx.moveTo(-width / 2 + r, -height / 2);
+  ctx.lineTo(width / 2 - r, -height / 2);
+  ctx.arc(width / 2 - r, 0, r, -Math.PI / 2, Math.PI / 2);
+  ctx.lineTo(-width / 2 + r, height / 2);
+  ctx.arc(-width / 2 + r, 0, r, Math.PI / 2, Math.PI * 1.5);
+  ctx.closePath();
+}
+
+function getPlacementIOBuildings() {
+  const out = [];
+  if (state.tool && BUILDING_DATA[state.tool]) {
+    const snap = snapBuildingCenter(state.tool, state.rotation, state.worldX, state.worldY);
+    out.push({ type:state.tool, x:snap.x, y:snap.y, rotation:state.rotation, id:'placement-ghost', floor:state.floor });
+  }
+  for (const b of getPastePreviewBuildings()) out.push({ ...b, id:`paste-ghost-${Math.abs(b.id)}` });
+  return out;
+}
+
+function drawIOHighlightsScreen() {
+  if (ioPillsDisabled()) return;
+  const activeType = (state.tool === 'conveyor_belt' || state.tool === 'conveyor_lift') ? 'belt' : ((state.tool === 'pipeline' || state.tool === 'vertical_pipe') ? 'pipe' : null);
+  const hovered = getIOAtWorld(state.worldX, state.worldY, activeType || null);
+  const sourceAttachment = drawSource ? drawSource.attachment : null;
+  const pillWidth = IO_PILL_WIDTH_WORLD * camera.zoom;
+  const pillHeight = IO_PILL_HEIGHT_WORLD * camera.zoom;
+  const renderAll = camera.zoom >= 0.11 || activeType || drawSource;
+  const selectedSet = new Set(state.selected);
+  const ports = [];
+  if (renderAll || selectedSet.size) {
+    const view = getVisibleWorldRect(10*SCALE);
+    for (const b of buildings) if (b.floor === state.floor && isBuildingVisible(b,view) && (renderAll || selectedSet.has(b.id))) {
+      for (const p of getAllIOPoints(b)) ports.push({p,hologram:false});
+    }
+    for (const p of getLiftIOPointsForFloor(state.floor)) ports.push({p,hologram:false});
+    for (const b of getPlacementIOBuildings()) for (const p of getAllIOPoints(b)) ports.push({p,hologram:true});
+  }
+  for (const entry of ports) {
+    const p = entry.p;
+    const screen = worldToScreen(p.worldX, p.worldY);
+    if (screen.x < -60 || screen.y < -60 || screen.x > W + 60 || screen.y > H + 60) continue;
+    const attachment = makeConnectorAttachment(p);
+    const isSource = !entry.hologram && drawSnapTarget && ((drawSnapTarget.buildingId != null && drawSnapTarget.buildingId === p.buildingId) || (drawSnapTarget.liftId != null && drawSnapTarget.liftId === p.liftId)) && drawSnapTarget.idx === p.idx && drawSnapTarget.dir === p.dir;
+    const isHovered = !entry.hologram && hovered && ((hovered.buildingId != null && hovered.buildingId === p.buildingId) || (hovered.liftId != null && hovered.liftId === p.liftId)) && hovered.idx === p.idx && hovered.dir === p.dir;
+    const compatible = !sourceAttachment || connectorAttachmentsCompatible(sourceAttachment, attachment);
+    const angle = portPillAngle(p);
+    const typeColor = p.type === 'belt' ? '#FA9549' : '#3498db';
+    const fillColor = p.type === 'pipe' ? '#3498db' : (p.dir === 'output' ? '#2ecc71' : typeColor);
+    ctx.save(); ctx.translate(screen.x,screen.y); ctx.rotate(angle);
+    ctx.globalAlpha = entry.hologram ? 1 : (activeType && p.type !== activeType ? 0.72 : 0.96);
+    if (isHovered || isSource) {
+      pillPath(pillWidth+8,pillHeight+8); ctx.fillStyle = isHovered && !compatible ? 'rgba(231,76,60,0.55)' : 'rgba(255,255,255,0.35)'; ctx.fill();
+    }
+    pillPath(pillWidth,pillHeight); ctx.fillStyle=fillColor; ctx.fill();
+    ctx.strokeStyle = isHovered && !compatible ? '#e74c3c' : (isSource ? '#fff' : '#f7f7f7');
+    ctx.lineWidth = entry.hologram ? 1.75 : (isSource || isHovered ? 2.5 : 1.25); ctx.stroke(); ctx.restore();
+  }
+  ctx.globalAlpha = 1;
+}
+
+// ── Connection line preview (Manhattan) while drawing (world coords) ──
+function drawConnectionLine() {
+  if (!drawSource) return;
+  const z = camera.zoom;
+  const target = compatibleIOAtWorld(state.worldX, state.worldY, drawType, drawSource.attachment);
+  const end = target ? { x:target.worldX, y:target.worldY } : { x:snapToGrid(state.worldX), y:snapToGrid(state.worldY) };
+  const dstDir = target ? portOutwardDir(target) : null;
+  const pts = computePath(drawSource.x, drawSource.y, end.x, end.y, state.floor, drawSource.dir, dstDir);
+  const color = drawType === 'belt' ? 'rgba(200,200,200,0.65)' : 'rgba(250,149,73,0.65)';
+  strokeConnectorPath(pts, color, false, !!drawSource.attachment, !!target);
+  if (drawType === 'belt') strokeBeltStrips(pts);
+  drawConnectorTierLabels({points:pts,tier:state.connectorTier[drawType]}, drawType);
+}
+
+// ── Selection rectangle (screen coords — no camera transform) ──
+function drawSelectionRect() {
+  if (state.dragging !== 'select') return;
+  const start = state.dragStart;
+  const end = { x: state.mouseX, y: state.mouseY };
+  const x = Math.min(start.x, end.x), y = Math.min(start.y, end.y);
+  const w = Math.abs(end.x - start.x), h = Math.abs(end.y - start.y);
+  ctx.strokeStyle = '#f5a623';
+  ctx.lineWidth = 2;
+  ctx.setLineDash([5, 3]);
+  ctx.strokeRect(x, y, w, h);
+  ctx.setLineDash([]);
+  ctx.fillStyle = 'rgba(245,166,35,0.08)';
+  ctx.fillRect(x, y, w, h);
+}
+
+function drawLiftsScreen() {
+  const activeKind = state.tool === 'conveyor_lift' ? 'belt' : (state.tool === 'vertical_pipe' ? 'pipe' : null);
+  const z = camera.zoom;
+  const radius = Math.max(1, 1.25 * SCALE * z);
+  const destinationOffset = 2.125 * SCALE * z;
+  for (const lift of lifts) {
+    if (lift.fromFloor !== state.floor && lift.toFloor !== state.floor) continue;
+    const anchor = getLiftAnchor(lift);
+    const p = worldToScreen(anchor.x,anchor.y);
+    const margin = radius + destinationOffset + 4;
+    if (p.x < -margin || p.y < -margin || p.x > W+margin || p.y > H+margin) continue;
+    const isDestination = lift.toFloor === state.floor;
+    const ox = isDestination ? destinationOffset : 0, oy = isDestination ? -destinationOffset : 0;
+    ctx.save(); ctx.translate(p.x+ox,p.y+oy);
+    ctx.beginPath(); ctx.arc(0,0,radius,0,Math.PI*2);
+    ctx.fillStyle = lift.kind === 'belt' ? 'rgba(200,200,200,.96)' : 'rgba(250,149,73,.96)'; ctx.fill();
+    ctx.strokeStyle = lift.id === selectedLiftId ? '#fff1a8' : '#222';
+    ctx.lineWidth = Math.max(.5, (lift.id === selectedLiftId ? .375 : .1875) * SCALE * z); ctx.stroke();
+    ctx.fillStyle='#111'; ctx.font=`bold ${Math.max(1,1.875*SCALE*z)}px sans-serif`; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText(lift.direction === 'up' ? '↑' : '↓',0,0); ctx.restore();
+    if (isDestination) {
+      ctx.strokeStyle='rgba(255,255,255,.45)'; ctx.lineWidth=Math.max(.5,.125*SCALE*z); ctx.beginPath();
+      ctx.moveTo(p.x+.875*SCALE*z,p.y-.875*SCALE*z); ctx.lineTo(p.x+1.5*SCALE*z,p.y-1.5*SCALE*z); ctx.stroke();
+    }
+  }
+  if (activeKind) {
+    const target = getLiftPlacementTarget(state.worldX,state.worldY,activeKind);
+    if (target) {
+      const p=worldToScreen(target.x,target.y), previewRadius=Math.max(1,1.625*SCALE*z);
+      ctx.save(); ctx.globalAlpha=.7; ctx.strokeStyle='#fff1a8'; ctx.lineWidth=Math.max(.5,.375*SCALE*z);
+      ctx.beginPath(); ctx.arc(p.x,p.y,previewRadius,0,Math.PI*2); ctx.stroke();
+      ctx.fillStyle='#fff'; ctx.font=`bold ${Math.max(1,2.25*SCALE*z)}px sans-serif`; ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.fillText(state.liftDirection[activeKind]==='up'?'↑':'↓',p.x,p.y); ctx.restore();
+    }
+  }
+}
+
+// ── Movable annotation labels (screen-space boxes anchored in world space) ──
+function drawLabelsScreen() {
+  for (const label of labels) {
+    if (label.floor !== state.floor) continue;
+    const p = worldToScreen(label.x, label.y);
+    const m = getLabelMetrics(label.text);
+    if (p.x + m.width / 2 < 0 || p.y + m.height / 2 < 0 || p.x - m.width / 2 > W || p.y - m.height / 2 > H) continue;
+    const selected = label.id === selectedLabelId;
+    ctx.save();
+    ctx.fillStyle = 'rgba(28,28,28,0.94)';
+    ctx.strokeStyle = selected ? '#fff1a8' : '#f5a623';
+    ctx.lineWidth = Math.max(
+	  1,
+	  (selected ? 0.375 : 0.1875) * SCALE * camera.zoom
+	);
+    ctx.fillRect(p.x - m.width / 2, p.y - m.height / 2, m.width, m.height);
+    ctx.strokeRect(p.x - m.width / 2 + 0.5, p.y - m.height / 2 + 0.5, m.width - 1, m.height - 1);
+    ctx.font = `bold ${m.fontSize}px sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillStyle = '#f3eadb';
+    let text = label.text;
+    while (text.length > 1 && ctx.measureText(text).width > m.width - m.paddingX * 2) text = text.slice(0, -2) + '…';
+    ctx.fillText(text, p.x, p.y);
+    ctx.restore();
+  }
+}
+
+// ── Belt/pipe hover tooltip (screen coords) ──
+function drawConnectorHoverLabel() {
+  if (!mouseInsideCanvas || drawSource) return;
+  if (state.dragging) return;
+  const hit = getBeltPipeAt(state.worldX, state.worldY);
+  if (!hit) return;
+  const kind = hit.belt === false ? 'pipe' : 'belt';
+  const conn = hit.belt === false ? hit.obj : hit;
+  const text = `${kind === 'belt' ? 'Conveyor Belt' : 'Pipeline'} ${connectorTierLabel(kind, conn.tier || 1)}`;
+  const paddingX = 8, boxH = 26;
+  ctx.save();
+  ctx.font = 'bold 12px sans-serif';
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'middle';
+  const boxW = ctx.measureText(text).width + paddingX * 2;
+  let x = state.mouseX + 14, y = state.mouseY + 14;
+  if (x + boxW > W - 6) x = state.mouseX - boxW - 14;
+  if (y + boxH > H - 6) y = state.mouseY - boxH - 14;
+  x = Math.max(6, x); y = Math.max(6, y);
+  ctx.fillStyle = 'rgba(15,15,15,0.94)';
+  ctx.strokeStyle = kind === 'belt' ? '#c8c8c8' : '#FA9549';
+  ctx.lineWidth = 1;
+  ctx.fillRect(x, y, boxW, boxH);
+  ctx.strokeRect(x + 0.5, y + 0.5, boxW - 1, boxH - 1);
+  ctx.fillStyle = '#f3eadb';
+  ctx.fillText(text, x + paddingX, y + boxH / 2);
+  ctx.restore();
+}
+
+// ── Building hover tooltip (screen coords) ──
+function drawBuildingHoverLabel() {
+  if (!mouseInsideCanvas) return;
+  if (state.dragging === 'pan' || state.dragging === 'select' || state.dragging === 'label') return;
+  // Never cover or visually compete with an input/output pill. Port hit-testing
+  // and feedback must take priority whenever the cursor is over a connector.
+  if (getIOAtWorld(state.worldX, state.worldY, null)) return;
+  if (getBeltPipeAt(state.worldX, state.worldY)) return;
+  if (getLabelAtScreen(state.mouseX, state.mouseY)) return;
+  const b = getBuildingAt(state.worldX, state.worldY);
+  if (!b) return;
+  const d = BUILDING_DATA[b.type];
+  if (!d) return;
+
+  const paddingX = 8;
+  const boxH = 26;
+  ctx.save();
+  ctx.font = 'bold 12px sans-serif';
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'middle';
+  const textW = ctx.measureText(d.name).width;
+  const boxW = textW + paddingX * 2;
+  let x = state.mouseX + 14;
+  let y = state.mouseY + 14;
+  if (x + boxW > W - 6) x = state.mouseX - boxW - 14;
+  if (y + boxH > H - 6) y = state.mouseY - boxH - 14;
+  x = Math.max(6, x);
+  y = Math.max(6, y);
+
+  ctx.fillStyle = 'rgba(15,15,15,0.94)';
+  ctx.strokeStyle = '#f5a623';
+  ctx.lineWidth = 1;
+  ctx.fillRect(x, y, boxW, boxH);
+  ctx.strokeRect(x + 0.5, y + 0.5, boxW - 1, boxH - 1);
+  ctx.fillStyle = '#f3eadb';
+  ctx.fillText(d.name, x + paddingX, y + boxH / 2);
+  ctx.restore();
+}
+
+// ── Main update loop ──
+function update() {
+  if (renderDirty) {
+    renderDirty = false;
+    ctx.clearRect(0, 0, W, H);
+    ctx.save(); ctx.translate(camera.x, camera.y); ctx.scale(camera.zoom, camera.zoom);
+    drawFoundation();
+    drawBeltsAndPipes();
+    const view = getVisibleWorldRect(6*SCALE);
+    for (const b of buildings) if (b.floor === state.floor && isBuildingVisible(b,view)) drawBuilding(b);
+    drawSelectionOutlines(); drawGhost(); drawPasteGhost(); drawConnectionLine();
+    if (camera.zoom >= 0.07) drawFoundationDimensions();
+    ctx.restore();
+    drawLabelsScreen(); drawLiftsScreen(); drawConnectorHoverLabel(); drawBuildingHoverLabel(); drawSelectionRect(); drawIOHighlightsScreen(); updateCanvasCursor();
+    document.getElementById('zoom-display').textContent = camera.zoom.toFixed(2).replace(/0$/,'') + 'x';
+    updateCostPanel();
+  }
+  requestAnimationFrame(update);
+}
+
+// Any interaction that can affect hover, selection, geometry, menus, floors, or camera invalidates one frame.
+for (const ev of ['mousemove','mousedown','mouseup','wheel','mouseenter','mouseleave','dblclick']) canvas.addEventListener(ev, invalidateRender, {passive:ev==='wheel'?false:true});
+canvas.addEventListener('mousemove', () => { if (state.dragging === 'place') invalidateCostPanel(); }, {passive:true});
+canvas.addEventListener(
+  'mousedown',
+  invalidateCostPanel,
+  { passive: true }
+);
+
+canvas.addEventListener(
+  'mouseup',
+  () => {
+    invalidateCostPanel();
+    scheduleLocalPlanSave();
+  },
+  { passive: true }
+);
+
+window.addEventListener('keydown', () => {
+  invalidateRender();
+  invalidateCostPanel();
+});
+
+window.addEventListener('keyup', () => {
+  invalidateRender();
+  scheduleLocalPlanSave();
+});
+
+document.addEventListener('click', () => {
+  invalidateRender();
+  invalidateCostPanel();
+  scheduleLocalPlanSave();
+});
+
+document.addEventListener('change', () => {
+  invalidateRender();
+  invalidateCostPanel();
+  scheduleLocalPlanSave();
+});
+
+// Make one final synchronous save when leaving or refreshing.
+window.addEventListener('beforeunload', savePlanLocally);
+
+// ═══════════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════════
+state.floors = normaliseFloorMap(state.floors);
+
+const restoredLocalPlan = loadPlanLocally();
+
+if (!restoredLocalPlan) {
+  updateFloorSelect();
+}
+
+requestAnimationFrame(update);
+</script>
+</body>
+</html>
