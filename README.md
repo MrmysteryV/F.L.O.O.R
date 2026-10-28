@@ -97,3 +97,9 @@ The exported `.sfactory` file should be used if transferring between browsers/de
 F.L.O.O.R is a fan made planning tool and is not affiliated with or endorsed by Coffee Stain Studios.
 
 Satisfactory and its related names, images, and assets are the property of their respective owners.
+
+---
+
+### Transparency notice
+
+This project was used generative AI to streamline development. I believe in transparent use of these tools and I have gone through multiple polishing and testing iterations to make sure the final result is up to a good finished standard.
